@@ -1,0 +1,16 @@
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.Scene?>
+<?import javafx.stage.Stage?>
+
+<Stage title="Hello World" fx:controller="sample.Controller">
+    <scene >
+        <Scene >
+            <GridPane xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+                <children>
+                    <Label text="Feasibility Test Successful"/>
+                </children>
+            </GridPane>
+        </Scene>
+    </scene>
+</Stage>
