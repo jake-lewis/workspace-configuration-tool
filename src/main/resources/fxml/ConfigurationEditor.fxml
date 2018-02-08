@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.BorderPane?>
+
+<Tab text="Configuration Editor" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.editor.ConfigurationEditorController">
+    <BorderPane prefHeight="200.0" prefWidth="200.0">
+        <center>
+            <TabPane prefHeight="200.0" prefWidth="200.0" side="BOTTOM" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.121">
+                <tabs>
+                    <Tab text="Visual Editor">
+                        <content>
+                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                <center>
+                                    <TreeView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" fx:id="visualEditor"/>
+                                </center>
+                            </BorderPane>
+                        </content>
+                    </Tab>
+                    <Tab text="Text Editor">
+                        <content>
+                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                <center>
+                                    <TextArea prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" fx:id="textEditor"/>
+                                </center>
+                            </BorderPane>
+                        </content>
+                    </Tab>
+                </tabs>
+            </TabPane>
+        </center>
+    </BorderPane>
+</Tab>

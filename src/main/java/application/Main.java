@@ -19,6 +19,11 @@ public class Main extends Application {
         primaryStage.show();
 
         root.setTop(FXMLLoader.load(getClass().getResource("/fxml/MenuBar.fxml")));
+
+        ObservableList<Tab> features = ((TabPane) root.getCenter()).getTabs();
+        features.add(FXMLLoader.load(getClass().getResource("/fxml/ConfigurationEditor.fxml")));
+
+        root.setBottom(FXMLLoader.load(getClass().getResource("/fxml/Footer.fxml")));
     }
 
 
