@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<MenuBar BorderPane.alignment="CENTER" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.menus.MenuBarController">
+    <menus>
+        <Menu mnemonicParsing="false" text="File" fx:id="fileMenu">
+            <items>
+                <MenuItem mnemonicParsing="false" text="New" fx:id="fileNew"/>
+                <MenuItem mnemonicParsing="false" text="Open..." fx:id="fileOpen"/>
+                <MenuItem mnemonicParsing="false" text="Save" fx:id="fileSave"/>
+                <MenuItem mnemonicParsing="false" text="Save As..." fx:id="fileSaveAs"/>
+                <MenuItem mnemonicParsing="false" text="Close" fx:id="fileClose"/>
+            </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit" fx:id="editMenu">
+            <items>
+                <MenuItem mnemonicParsing="false" text="Cut" fx:id="editCut"/>
+                <MenuItem mnemonicParsing="false" text="Copy" fx:id="editCopy"/>
+                <MenuItem mnemonicParsing="false" text="Paste" fx:id="editPaste"/>
+                <MenuItem mnemonicParsing="false" text="Delete" fx:id="editDelete"/>
+            </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help" fx:id="helpMenu">
+            <items>
+                <MenuItem mnemonicParsing="false" text="User Guide" fx:id="helpUserGuide"/>
+                <MenuItem mnemonicParsing="false" text="About" fx:id="helpAbout"/>
+            </items>
+        </Menu>
+    </menus>
+</MenuBar>
