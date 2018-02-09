@@ -1,5 +1,6 @@
 package application;
 
+import parsers.TestParser;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +25,9 @@ public class Main extends Application {
         features.add(FXMLLoader.load(getClass().getResource("/fxml/ConfigurationEditor.fxml")));
 
         root.setBottom(FXMLLoader.load(getClass().getResource("/fxml/Footer.fxml")));
+
+        TestParser parser = new TestParser();
+        parser.test();
     }
 
 
