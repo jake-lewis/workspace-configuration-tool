@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<structure xmlns="https://github.com/jsjlewis96/project"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://github.com/jsjlewis96/project workspaceConfigSchema.xsd">
+    <config>
+        <project>testProject</project>
+        <root>rootPath</root>
+        <target>targetPath</target>
+    </config>
+    <dirs>
+        <dir>
+            <name>Management</name>
+            <dirs>
+                <dir>
+                    <prefix>MS</prefix>
+                    <separator>.</separator>
+                    <name>Project Schedule</name>
+                    <dirs>
+                        <dir>
+                            <prefix>1</prefix>
+                            <name>Gantt Chart</name>
+                        </dir>
+                        <dir>
+                            <prefix>2</prefix>
+                            <name>Process Matrix</name>
+                        </dir>
+                    </dirs>
+                </dir>
+            </dirs>
+        </dir>
+    </dirs>
+</structure>
