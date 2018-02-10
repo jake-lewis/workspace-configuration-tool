@@ -1,21 +1,19 @@
 package model;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class ConfigNode {
+public class Directory {
 
     private String name;
     private String prefix;
     private String separator;
-    private ConfigNode parent;
-    private List<ConfigNode> children = new LinkedList<>();
+    private Directory parent;
+    private List<Directory> children = new LinkedList<>();
 
-    public ConfigNode(Node node, ConfigNode parent) {
+    public Directory(Node node, Directory parent) {
 
         this.parent = parent;
 
@@ -36,7 +34,7 @@ public class ConfigNode {
 
                     while (dir.getNextSibling() != null) {
                         if (dir.getNodeType() == Node.ELEMENT_NODE) {
-                            children.add(new ConfigNode(dir, this));
+                            children.add(new Directory(dir, this));
                         }
                         dir = dir.getNextSibling();
                     }
@@ -46,7 +44,7 @@ public class ConfigNode {
         }
     }
 
-    public List<ConfigNode> getChildren() {
+    public List<Directory> getChildren() {
         return children;
     }
 
