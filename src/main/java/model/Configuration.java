@@ -52,4 +52,9 @@ public class Configuration {
     public List<Directory> getDirectories() {
         return directories;
     }
+
+    @Override
+    public String toString() {
+        return projectName;
+    }
 }
