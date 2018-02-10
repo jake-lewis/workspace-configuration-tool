@@ -37,6 +37,18 @@ public class Configuration {
         }
     }
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getProjectRootPath() {
+        return projectRootPath;
+    }
+
+    public String getProjectTargetPath() {
+        return projectTargetPath;
+    }
+
     public List<Directory> getDirectories() {
         return directories;
     }
