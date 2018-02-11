@@ -53,6 +53,14 @@ public class CommandDelegator {
         Executor executor = getExecutor(command);
 
         if (executor != null) {
+
+            //remove any redoable commands in front of published command
+            //i.e. can't publish, undo, publish, then redo the first publish
+            while (commands.hasNext()) {
+                commands.next();
+                commands.remove();
+            }
+
             //Unchecked call to execute()
             //doing this because can't determine type until runtime, will be correct
             //noinspection unchecked
@@ -131,11 +139,22 @@ public class CommandDelegator {
     }
 
     public boolean canUndo() {
-        return commands.hasPrevious();
+        //Check if there is a previous command, that is undoable
+        if (commands.hasPrevious()) {
+            Command previous = commands.previous();
+            commands.next(); //revert position of ListIterator
+            return previous instanceof UndoableCommand;
+        }
+        return false;
     }
 
     public boolean canRedo() {
-        return commands.hasNext();
+        if (commands.hasNext()) {
+            Command next = commands.next();
+            commands.previous(); //Revert position of ListIterator
+            return next instanceof UndoableCommand;
+        }
+        return false;
     }
 
     public String getUndoName() {
