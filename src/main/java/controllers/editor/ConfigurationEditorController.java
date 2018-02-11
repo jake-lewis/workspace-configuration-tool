@@ -2,7 +2,7 @@ package controllers.editor;
 
 import controllers.CommandDelegator;
 import model.executors.Executor;
-import model.commands.OpenConfigCommand;
+import model.commands.concrete.OpenConfigCommand;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;

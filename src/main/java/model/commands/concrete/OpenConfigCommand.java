@@ -1,4 +1,6 @@
-package model.commands;
+package model.commands.concrete;
+
+import model.commands.Command;
 
 import java.io.File;
 
