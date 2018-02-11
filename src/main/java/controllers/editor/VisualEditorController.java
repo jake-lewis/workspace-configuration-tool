@@ -18,10 +18,13 @@ public class VisualEditorController {
 
     public void populateVisualEditor(Configuration configuration) {
         List<Directory> directories = configuration.getDirectories();
-        List<TreeItem<Directory>> treeItems = new LinkedList<>();
+        TreeItem<Directory> treeRoot = new TreeItem<>();
         for (Directory rootDir : directories) {
-            treeItems.add(createTreeItem(rootDir));
+            treeRoot.getChildren().add(createTreeItem(rootDir));
         }
+
+        visualEditor.setRoot(treeRoot);
+        visualEditor.setShowRoot(false);
     }
 
     private TreeItem createTreeItem(Directory dir) {

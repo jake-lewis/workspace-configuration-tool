@@ -1,20 +1,18 @@
 package controllers.menus;
 
+import controllers.CommandDelegator;
+import model.commands.OpenConfigCommand;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.Configuration;
-import org.xml.sax.SAXException;
-import parsers.XMLParser;
 
-import java.io.IOException;
+import java.io.File;
 
 class FileMenuController {
     private final Stage stage;
 
     FileMenuController(Stage stage, Menu menu) {
-
         this.stage = stage;
 
         //Assign actions to named menu items
@@ -49,14 +47,14 @@ class FileMenuController {
         try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open existing configuration file");
-            Configuration config = XMLParser.parse(fileChooser.showOpenDialog(stage));
-            //TODO populate editors with config
-        } catch (IOException e) {
-            //TODO
-        } catch (SAXException e) {
-            //TODO
+            File file = fileChooser.showOpenDialog(stage);
+            if (file != null) {
+                CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(file));
+            }
+
         } catch (Exception e) {
             //TODO
+            e.printStackTrace();
         }
     }
 
