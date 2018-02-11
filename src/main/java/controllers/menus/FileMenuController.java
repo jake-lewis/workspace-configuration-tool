@@ -1,7 +1,7 @@
 package controllers.menus;
 
 import controllers.CommandDelegator;
-import model.commands.OpenConfigCommand;
+import model.commands.concrete.OpenConfigCommand;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
