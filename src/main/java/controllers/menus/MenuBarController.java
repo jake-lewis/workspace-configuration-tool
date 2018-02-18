@@ -1,15 +1,24 @@
 package controllers.menus;
 
+import controllers.CommandDelegator;
 import controllers.editor.ConfigurationEditorController;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MenuBarController implements Initializable{
+public class MenuBarController implements Initializable, InvalidationListener{
+
+    private CommandDelegator commandDelegator;
 
     @FXML
     Stage stage;
@@ -23,10 +32,48 @@ public class MenuBarController implements Initializable{
     @FXML
     Menu helpMenu;
 
+    @FXML
+    Button undoBtn;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         FileMenuController fileMenuController = new FileMenuController(stage, fileMenu);
         EditMenuController editMenuController = new EditMenuController(editMenu);
         HelpMenuController helpMenuController = new HelpMenuController(helpMenu);
+
+        commandDelegator = CommandDelegator.getINSTANCE();
+
+        //set disabled on initialisation. there should be nothing to undo
+        undoBtn.setDisable(true);
+        undoBtn.setOnAction(event -> {
+            try {
+                boolean result = commandDelegator.undo();
+                //TODO handle if no executor is subscribed
+            } catch (Exception e) {
+                e.printStackTrace();
+                //TODO handle exception better
+            }
+        });
+
+        commandDelegator.addListener(this);
+    }
+
+    private void updateUndoUI() {
+        if (commandDelegator.canUndo()) {
+            undoBtn.setDisable(false);
+            Tooltip tooltip = undoBtn.getTooltip();
+            if (null != tooltip) {
+                tooltip.setText(commandDelegator.getUndoName());
+            }
+        } else {
+            undoBtn.setDisable(true);
+        }
+    }
+
+    @Override
+    public void invalidated(Observable observable) {
+        if (observable instanceof CommandDelegator) {
+            updateUndoUI();
+        }
     }
 }
