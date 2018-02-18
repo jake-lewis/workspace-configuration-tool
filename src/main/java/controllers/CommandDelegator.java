@@ -1,16 +1,15 @@
 package controllers;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import model.commands.Command;
 import model.commands.UndoableCommand;
 import model.executors.Executor;
 import model.executors.UndoableExecutor;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
-public class CommandDelegator {
+public class CommandDelegator implements Observable {
 
     private static CommandDelegator INSTANCE = new CommandDelegator();
 
@@ -22,6 +21,8 @@ public class CommandDelegator {
     public static CommandDelegator getINSTANCE() {
         return INSTANCE;
     }
+
+    private List<InvalidationListener> listeners = new LinkedList<>();
 
     public <C extends Command> boolean subscribe(Executor<C> executor, Class <C> clazz) {
 
@@ -36,10 +37,13 @@ public class CommandDelegator {
     }
 
     public <C extends Command> boolean unsubscribe(Executor<C> executor) {
+        notifyListeners();
         return executors.entrySet().removeIf((entry) -> entry.getValue().equals(executor));
     }
 
     private Executor getExecutor(Command command) {
+        //TODO change to loop through map, using Class.isAssignableFrom
+        //i.e if command.getClass().isAssignableFrom(executors.key)
         return executors.get(command.getClass());
     }
 
@@ -61,11 +65,20 @@ public class CommandDelegator {
                 commands.remove();
             }
 
+            //If the command is not undoable, clear all previous history
+            if (!(command instanceof UndoableCommand)) {
+                while (commands.hasPrevious()) {
+                    commands.previous();
+                    commands.remove();
+                }
+            }
+
             //Unchecked call to execute()
             //doing this because can't determine type until runtime, will be correct
             //noinspection unchecked
             executor.execute(command);
             commands.add(command);
+            notifyListeners();
             return true;
         }
 
@@ -91,6 +104,7 @@ public class CommandDelegator {
                         //doing this because can't determine type until runtime, will be correct
                         //noinspection unchecked
                         undoableExecutor.unexecute((UndoableCommand) command);
+                        notifyListeners();
                         return true;
                     }
                 }
@@ -123,7 +137,8 @@ public class CommandDelegator {
                         //Unchecked call to unexecute()
                         //doing this because can't determine type until runtime, will be correct
                         //noinspection unchecked
-                        undoableExecutor.execute((UndoableCommand) command);
+                        undoableExecutor.reexecute((UndoableCommand) command);
+                        notifyListeners();
                         return true;
                     }
                 }
@@ -173,5 +188,21 @@ public class CommandDelegator {
         }
 
         return null;
+    }
+
+    @Override
+    public void addListener(InvalidationListener listener) {
+        this.listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(InvalidationListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        for (InvalidationListener listener : listeners) {
+            listener.invalidated(this);
+        }
     }
 }

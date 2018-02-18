@@ -14,7 +14,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         BorderPane root = FXMLLoader.load(getClass().getResource("/fxml/RootLayout.fxml"));
-        primaryStage.setTitle("Workspace Configuration Tool");
+        primaryStage.setTitle("Workspace XMLConfiguration Tool");
         primaryStage.setScene(new Scene(root, 1280, 720));
         primaryStage.show();
 

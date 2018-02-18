@@ -1,5 +1,6 @@
-package model;
+package model.configuration;
 
+import model.Directory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -7,14 +8,14 @@ import org.w3c.dom.Node;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Configuration {
+public class XMLConfiguration implements Configuration {
 
     private String projectName;
     private String projectRootPath;
     private String projectTargetPath;
     private List<Directory> directories;
 
-    public Configuration(Document document) {
+    XMLConfiguration(Document document) {
         document.getDocumentElement().normalize();
 
         //XML Schema ensures that only one config and dirsRoot node can exist
@@ -37,18 +38,22 @@ public class Configuration {
         }
     }
 
+    @Override
     public String getProjectName() {
         return projectName;
     }
 
+    @Override
     public String getProjectRootPath() {
         return projectRootPath;
     }
 
+    @Override
     public String getProjectTargetPath() {
         return projectTargetPath;
     }
 
+    @Override
     public List<Directory> getDirectories() {
         return directories;
     }
