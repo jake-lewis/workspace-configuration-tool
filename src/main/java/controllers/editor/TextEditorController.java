@@ -1,7 +1,7 @@
 package controllers.editor;
 
 import javafx.scene.control.TextArea;
-import model.Configuration;
+import model.configuration.XMLConfiguration;
 
 public class TextEditorController {
 
@@ -9,7 +9,7 @@ public class TextEditorController {
 
     public TextEditorController(TextArea textEditor) { this.textArea = textEditor; }
 
-    public void populateTextEditor(Configuration configuration) {
+    public void populateTextEditor(XMLConfiguration configuration) {
 
     }
 }

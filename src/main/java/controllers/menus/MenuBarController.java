@@ -76,7 +76,7 @@ public class MenuBarController implements Initializable, InvalidationListener{
             undoBtn.setDisable(false);
             Tooltip tooltip = undoBtn.getTooltip();
             if (null != tooltip) {
-                tooltip.setText(commandDelegator.getUndoName());
+                tooltip.setText("Undo " + commandDelegator.getUndoName());
             }
         } else {
             undoBtn.setDisable(true);
@@ -88,7 +88,7 @@ public class MenuBarController implements Initializable, InvalidationListener{
             redoBtn.setDisable(false);
             Tooltip tooltip = redoBtn.getTooltip();
             if (null != tooltip) {
-                tooltip.setText(commandDelegator.getRedoName());
+                tooltip.setText("Redo " + commandDelegator.getRedoName());
             }
         } else {
             redoBtn.setDisable(true);

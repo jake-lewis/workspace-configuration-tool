@@ -56,7 +56,19 @@
                   </ImageView>
                </graphic>
                <tooltip>
-                  <Tooltip fx:id="undoTooltip" text="Empty Tooltip" />
+                  <Tooltip text="Empty Tooltip" />
+               </tooltip>
+            </Button>
+            <Button fx:id="redoBtn" layoutX="10.0" layoutY="10.0" mnemonicParsing="false">
+               <graphic>
+                  <ImageView pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/redo.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="Empty Tooltip" />
                </tooltip>
             </Button>
          </items>

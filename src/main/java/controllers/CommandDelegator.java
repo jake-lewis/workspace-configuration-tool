@@ -42,6 +42,8 @@ public class CommandDelegator implements Observable {
     }
 
     private Executor getExecutor(Command command) {
+        //TODO change to loop through map, using Class.isAssignableFrom
+        //i.e if command.getClass().isAssignableFrom(executors.key)
         return executors.get(command.getClass());
     }
 
@@ -61,6 +63,14 @@ public class CommandDelegator implements Observable {
             while (commands.hasNext()) {
                 commands.next();
                 commands.remove();
+            }
+
+            //If the command is not undoable, clear all previous history
+            if (!(command instanceof UndoableCommand)) {
+                while (commands.hasPrevious()) {
+                    commands.previous();
+                    commands.remove();
+                }
             }
 
             //Unchecked call to execute()
@@ -127,7 +137,7 @@ public class CommandDelegator implements Observable {
                         //Unchecked call to unexecute()
                         //doing this because can't determine type until runtime, will be correct
                         //noinspection unchecked
-                        undoableExecutor.execute((UndoableCommand) command);
+                        undoableExecutor.reexecute((UndoableCommand) command);
                         notifyListeners();
                         return true;
                     }
