@@ -1,32 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<MenuBar BorderPane.alignment="CENTER" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.menus.MenuBarController">
-    <menus>
-        <Menu mnemonicParsing="false" text="File" fx:id="fileMenu">
-            <items>
-                <MenuItem mnemonicParsing="false" text="New" fx:id="fileNew"/>
-                <MenuItem mnemonicParsing="false" text="Open..." fx:id="fileOpen"/>
-                <MenuItem mnemonicParsing="false" text="Save" fx:id="fileSave"/>
-                <MenuItem mnemonicParsing="false" text="Save As..." fx:id="fileSaveAs"/>
-                <MenuItem mnemonicParsing="false" text="Close" fx:id="fileClose"/>
-            </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Edit" fx:id="editMenu">
-            <items>
-                <MenuItem mnemonicParsing="false" text="Cut" fx:id="editCut"/>
-                <MenuItem mnemonicParsing="false" text="Copy" fx:id="editCopy"/>
-                <MenuItem mnemonicParsing="false" text="Paste" fx:id="editPaste"/>
-                <MenuItem mnemonicParsing="false" text="Delete" fx:id="editDelete"/>
-            </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Help" fx:id="helpMenu">
-            <items>
-                <MenuItem mnemonicParsing="false" text="User Guide" fx:id="helpUserGuide"/>
-                <MenuItem mnemonicParsing="false" text="About" fx:id="helpAbout"/>
-            </items>
-        </Menu>
-    </menus>
-</MenuBar>
+<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.menus.MenuBarController">
+   <children>
+      <VBox />
+      <MenuBar>
+          <menus>
+              <Menu fx:id="fileMenu" mnemonicParsing="false" text="File">
+                  <items>
+                      <MenuItem fx:id="fileNew" mnemonicParsing="false" text="New" />
+                      <MenuItem fx:id="fileOpen" mnemonicParsing="false" text="Open..." />
+                      <MenuItem fx:id="fileSave" mnemonicParsing="false" text="Save" />
+                      <MenuItem fx:id="fileSaveAs" mnemonicParsing="false" text="Save As..." />
+                      <MenuItem fx:id="fileClose" mnemonicParsing="false" text="Close" />
+                  </items>
+              </Menu>
+              <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
+                  <items>
+                      <MenuItem fx:id="editCut" mnemonicParsing="false" text="Cut" />
+                      <MenuItem fx:id="editCopy" mnemonicParsing="false" text="Copy" />
+                      <MenuItem fx:id="editPaste" mnemonicParsing="false" text="Paste" />
+                      <MenuItem fx:id="editDelete" mnemonicParsing="false" text="Delete" />
+                  </items>
+              </Menu>
+              <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
+                  <items>
+                      <MenuItem fx:id="helpUserGuide" mnemonicParsing="false" text="User Guide" />
+                      <MenuItem fx:id="helpAbout" mnemonicParsing="false" text="About" />
+                  </items>
+              </Menu>
+          </menus>
+      </MenuBar>
+      <ToolBar style="-fx-padding: 0;">
+         <HBox.margin>
+            <Insets />
+         </HBox.margin>
+         <items>
+            <Button fx:id="undoBtn" mnemonicParsing="false">
+               <graphic>
+                  <ImageView pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/undo.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip fx:id="undoTooltip" text="Empty Tooltip" />
+               </tooltip>
+            </Button>
+         </items>
+      </ToolBar>
+   </children>
+</HBox>
