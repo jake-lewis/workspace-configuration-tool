@@ -5,6 +5,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,6 +18,7 @@ public class XMLConfiguration implements Configuration {
     private String projectRootPath;
     private String projectTargetPath;
     private List<Directory> directories;
+    private String textContent;
 
     XMLConfiguration(Document document) {
         document.getDocumentElement().normalize();
@@ -36,6 +41,20 @@ public class XMLConfiguration implements Configuration {
             }
             dir = dir.getNextSibling();
         }
+
+        try {
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+            textContent = writer.toString();
+        } catch (TransformerConfigurationException e) { //TODO improve exception handling
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -57,6 +76,9 @@ public class XMLConfiguration implements Configuration {
     public List<Directory> getDirectories() {
         return directories;
     }
+
+    @Override
+    public String getTextContent() { return textContent; }
 
     @Override
     public String toString() {

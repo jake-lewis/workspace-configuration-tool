@@ -36,6 +36,9 @@ public class NullConfiguration implements Configuration {
     }
 
     @Override
+    public String getTextContent() { return null; }
+
+    @Override
     public boolean equals(Object obj) {
         return obj == null;
     }

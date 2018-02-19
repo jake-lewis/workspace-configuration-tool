@@ -7,7 +7,7 @@ import model.configuration.Configuration;
 
 import java.util.List;
 
-public class VisualEditorController {
+public class VisualEditorController implements EditorController {
 
     private TreeView<Directory> visualEditor;
 
@@ -15,7 +15,7 @@ public class VisualEditorController {
         this.visualEditor = visualEditor;
     }
 
-    public void populateVisualEditor(Configuration configuration) {
+    public void populate(Configuration configuration) {
         List<Directory> directories = configuration.getDirectories();
         TreeItem<Directory> treeRoot = new TreeItem<>();
         for (Directory rootDir : directories) {

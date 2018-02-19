@@ -13,6 +13,8 @@ public interface Configuration {
 
     List<Directory> getDirectories();
 
+    String getTextContent();
+
     @Override
     String toString();
 }

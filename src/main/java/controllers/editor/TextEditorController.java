@@ -1,15 +1,16 @@
 package controllers.editor;
 
 import javafx.scene.control.TextArea;
-import model.configuration.XMLConfiguration;
+import model.configuration.Configuration;
 
-public class TextEditorController {
+public class TextEditorController implements EditorController {
 
     private TextArea textArea;
 
-    public TextEditorController(TextArea textEditor) { this.textArea = textEditor; }
+    public TextEditorController(TextArea textEditor) { textArea = textEditor; }
 
-    public void populateTextEditor(XMLConfiguration configuration) {
-
+    public void populate(Configuration configuration) {
+        textArea.clear();
+        textArea.setText(configuration.getTextContent());
     }
 }
