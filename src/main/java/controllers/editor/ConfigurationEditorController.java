@@ -3,8 +3,10 @@ package controllers.editor;
 import controllers.CommandDelegator;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeView;
+import javafx.scene.layout.GridPane;
 import model.Directory;
 import model.commands.concrete.OpenConfigCommand;
 import model.configuration.Configuration;
@@ -27,10 +29,13 @@ public class ConfigurationEditorController implements Initializable, EditorContr
     @FXML
     TextArea textEditor;
 
+    @FXML
+    GridPane propertiesPane;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         CommandDelegator.getINSTANCE().subscribe(this, OpenConfigCommand.class);
-        editorControllers.add(new VisualEditorController(visualEditor));
+        editorControllers.add(new VisualEditorController(visualEditor, propertiesPane));
         editorControllers.add(new TextEditorController(textEditor));
         configuration = ConfigurationFactory.create();
     }
