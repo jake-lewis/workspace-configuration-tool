@@ -1,29 +1,29 @@
 package model.commands.concrete;
 
-import javafx.scene.control.TreeItem;
 import model.commands.UndoableCommand;
-import model.configuration.Directory;
 
 public class SelectTreeDirCommand implements UndoableCommand {
 
-    private TreeItem<Directory> prevItem;
-    private TreeItem<Directory> nextItem;
+    private int prevItem;
+    private int nextItem;
+    private String selectionName;
 
-    public SelectTreeDirCommand(TreeItem<Directory> prevItem, TreeItem<Directory> nextItem) {
+    public SelectTreeDirCommand(int prevItem, int nextItem, String selectionName) {
         this.prevItem = prevItem;
         this.nextItem = nextItem;
+        this.selectionName = selectionName;
     }
 
-    public TreeItem<Directory> getPrevItem() {
+    public int getPrevItem() {
         return prevItem;
     }
 
-    public TreeItem<Directory> getNextItem() {
+    public int getNextItem() {
         return nextItem;
     }
 
     @Override
     public String getName() {
-        return "Select folder: " + nextItem.getValue().toString();
+        return "Select folder: " + selectionName;
     }
 }

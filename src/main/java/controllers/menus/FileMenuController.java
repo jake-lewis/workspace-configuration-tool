@@ -47,6 +47,7 @@ class FileMenuController {
         try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open existing configuration file");
+            fileChooser.setInitialDirectory(new File("C:\\Git Repositories\\project\\src\\main\\resources\\example config"));
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(file));

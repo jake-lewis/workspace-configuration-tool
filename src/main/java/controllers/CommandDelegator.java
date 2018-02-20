@@ -91,6 +91,7 @@ public class CommandDelegator implements Observable {
             if (record) {
                 commands.add(command);
                 notifyListeners();
+                System.out.println(command.getName());
             }
             return true;
         }
@@ -118,6 +119,7 @@ public class CommandDelegator implements Observable {
                         //noinspection unchecked
                         undoableExecutor.unexecute((UndoableCommand) command);
                         notifyListeners();
+                        System.out.println(command.getName());
                         return true;
                     }
                 }
@@ -152,6 +154,7 @@ public class CommandDelegator implements Observable {
                         //noinspection unchecked
                         undoableExecutor.reexecute((UndoableCommand) command);
                         notifyListeners();
+                        System.out.println("Redo " + command.getName());
                         return true;
                     }
                 }
