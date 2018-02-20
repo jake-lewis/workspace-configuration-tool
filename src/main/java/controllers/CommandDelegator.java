@@ -48,12 +48,23 @@ public class CommandDelegator implements Observable {
     }
 
     /**
-     * Publishes command to the subscribed executor. <br/>
+     * Publishes command to the subscribed executor. Always records for undo, see {@link #publish(Command, boolean)} <br/>
      * @param command The command to execute
      * @return false if no executor is subscribed.
      * @throws Exception if the command does not execute successfully
      */
     public synchronized boolean publish(Command command) throws Exception {
+        return publish(command, true);
+    }
+
+    /**
+     * Publishes command to the subscribed executor, with the option of recording for undo <br/>
+     * @param command The command to execute
+     * @param record whether or not to add the command to the stack, enabling undo/redo
+     * @return false if no executor is subscribed.
+     * @throws Exception if the command does not execute successfully
+     */
+    public synchronized boolean publish(Command command, boolean record) throws Exception {
         Executor executor = getExecutor(command);
 
         if (executor != null) {
@@ -77,8 +88,10 @@ public class CommandDelegator implements Observable {
             //doing this because can't determine type until runtime, will be correct
             //noinspection unchecked
             executor.execute(command);
-            commands.add(command);
-            notifyListeners();
+            if (record) {
+                commands.add(command);
+                notifyListeners();
+            }
             return true;
         }
 

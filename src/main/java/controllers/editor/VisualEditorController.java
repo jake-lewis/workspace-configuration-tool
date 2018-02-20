@@ -1,17 +1,24 @@
 package controllers.editor;
 
+import controllers.CommandDelegator;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.GridPane;
+import model.commands.concrete.OpenConfigCommand;
+import model.commands.concrete.SelectTreeDirCommand;
 import model.configuration.Directory;
 import model.configuration.Configuration;
+import model.executors.UndoableExecutor;
 
 import java.util.List;
 
-public class VisualEditorController implements EditorController {
+public class VisualEditorController implements EditorController, UndoableExecutor<SelectTreeDirCommand> {
+
+    //DEBUG switch?
+    private boolean undoableUI = true;
 
     private TreeView<Directory> visualEditor;
     private TextField projectNameField;
@@ -23,6 +30,8 @@ public class VisualEditorController implements EditorController {
 
     public VisualEditorController(TreeView visualEditor, GridPane projectProperties, GridPane nodeProperties) {
         this.visualEditor = visualEditor;
+
+        CommandDelegator.getINSTANCE().subscribe(this, SelectTreeDirCommand.class);
 
         ObservableList<Node> gridPaneChildren = projectProperties.getChildren();
         for (Node node : gridPaneChildren) {
@@ -71,10 +80,13 @@ public class VisualEditorController implements EditorController {
 
         visualEditor.getSelectionModel().selectedItemProperty()
                 .addListener((observable, old_val, new_val) -> {
-                    TreeItem<Directory> selectedItem = new_val;
-                    nodeNameField.setText(selectedItem.getValue().getName());
-                    prefixField.setText(selectedItem.getValue().getDirectPrefix());
-                    separatorField.setText(selectedItem.getValue().getSeparator());
+                    try {
+                        if (null != new_val) {
+                            CommandDelegator.getINSTANCE().publish(new SelectTreeDirCommand(old_val, new_val), undoableUI);
+                        }
+                    } catch (Exception e) { //TODO handle exception better?
+                        e.printStackTrace();
+                    }
                 });
 
         visualEditor.setRoot(treeRoot);
@@ -88,5 +100,27 @@ public class VisualEditorController implements EditorController {
             item.getChildren().add(createTreeItem(child));
         }
         return item;
+    }
+
+    @Override
+    public void unexecute(SelectTreeDirCommand command) throws Exception {
+        if (null == command.getPrevItem()) {
+            nodeNameField.setText(null);
+            prefixField.setText(null);
+            separatorField.setText(null);
+        } else {
+            Directory prevSelectedItem = command.getPrevItem().getValue();
+            nodeNameField.setText(prevSelectedItem.getName());
+            prefixField.setText(prevSelectedItem.getDirectPrefix());
+            separatorField.setText(prevSelectedItem.getSeparator());
+        }
+    }
+
+    @Override
+    public void execute(SelectTreeDirCommand command) throws Exception {
+        Directory nextSelectedItem = command.getNextItem().getValue();
+        nodeNameField.setText(nextSelectedItem.getName());
+        prefixField.setText(nextSelectedItem.getDirectPrefix());
+        separatorField.setText(nextSelectedItem.getSeparator());
     }
 }
