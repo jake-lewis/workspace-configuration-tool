@@ -23,21 +23,13 @@ public class ConfigurationFactory {
 
         switch (type) {
             case XML:
-                return parseXML(file);
+                return new XMLConfiguration(file);
             default:
                 throw new IOException("Unsupported File Type");
         }
     }
 
-    private static Configuration parseXML(File file) throws IOException {
-        try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            return new XMLConfiguration(dBuilder.parse(file));
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            throw  new IOException("An error occurred while parsing the file: " + file.getPath(), e);
-        }
-    }
+
 
     private static String getExtension(File file) {
         String extension = "";

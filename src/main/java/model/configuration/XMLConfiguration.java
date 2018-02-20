@@ -3,11 +3,18 @@ package model.configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
+import java.io.*;
+import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,18 +27,26 @@ public class XMLConfiguration implements Configuration {
     private List<Directory> directories;
     private String textContent;
 
-    XMLConfiguration(Document document) {
-        this.document = document;
-        this.document.getDocumentElement().normalize();
-
-        updateProjectProperties();
-        updateDirectoryStructure();
-
+    public XMLConfiguration(File file) throws IOException {
         try {
+            InputStream stream = new FileInputStream(file);
+            updateDocument(new InputSource(stream));
+            stream.close();
+
+            updateProjectProperties();
+            updateDirectoryStructure();
             updateTextContent();
-        } catch (TransformerException e) {
-            e.printStackTrace(); //TODO improve exception
+        } catch (IOException | SAXException | ParserConfigurationException | TransformerException e) {
+            throw new IOException("An error occurred while parsing the file: " + file.getPath(), e);
         }
+    }
+
+    private void updateDocument(InputSource source) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+        document = dBuilder.parse(source);
+        document.getDocumentElement().normalize();
     }
 
     private void updateTextContent() throws TransformerException {
@@ -65,6 +80,21 @@ public class XMLConfiguration implements Configuration {
         projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
         projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
         projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
+    }
+
+    @Override
+    public void setTextContent(String textContent) throws ParseException {
+        try {
+            updateDocument(new InputSource(new StringReader(textContent)));
+            this.textContent = textContent;
+
+            updateProjectProperties();
+            updateDirectoryStructure();
+        } catch (SAXParseException e) {
+            throw new ParseException(e.getMessage(), e.getLineNumber());
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override

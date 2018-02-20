@@ -14,6 +14,9 @@ public class NullConfiguration implements Configuration {
     }
 
     @Override
+    public void setTextContent(String textContent) {}
+
+    @Override
     public String getProjectName() {
         return null;
     }
