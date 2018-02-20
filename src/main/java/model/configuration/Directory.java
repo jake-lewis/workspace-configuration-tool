@@ -1,7 +1,5 @@
 package model.configuration;
 
-import org.w3c.dom.Node;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,35 +11,15 @@ public class Directory {
     private Directory parent;
     private List<Directory> children = new LinkedList<>();
 
-    public Directory(Node node, Directory parent) {
+    public Directory(Directory parent) {
+        this(null, null, null, parent);
+    }
 
+    public Directory(String name, String prefix, String separator, Directory parent) {
+        this.name = name;
+        this.prefix = prefix;
+        this.separator = separator;
         this.parent = parent;
-
-        Node child = node.getFirstChild();
-
-        while(child.getNextSibling()!= null){
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-
-                if (child.getNodeName().equals("name")) {
-                    name = child.getTextContent();
-                } else if (child.getNodeName().equals("prefix")) {
-                    prefix = child.getTextContent();
-                } else if (child.getNodeName().equals("separator")) {
-                    separator = child.getTextContent();
-                } else if (child.getNodeName().equals("dirs")) {
-
-                    Node dir = child.getFirstChild();
-
-                    while (dir.getNextSibling() != null) {
-                        if (dir.getNodeType() == Node.ELEMENT_NODE) {
-                            children.add(new Directory(dir, this));
-                        }
-                        dir = dir.getNextSibling();
-                    }
-                }
-            }
-            child = child.getNextSibling();
-        }
     }
 
     public List<Directory> getChildren() {
@@ -67,5 +45,21 @@ public class Directory {
     public String toString() {
         String prefix = getFullPrefix().equals("") ? "" : getFullPrefix() + " ";
         return prefix + name;
+    }
+
+    public void setChildren(List<Directory> children) {
+        this.children = children;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
     }
 }

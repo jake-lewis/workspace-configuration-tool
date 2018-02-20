@@ -91,7 +91,7 @@ public class CommandDelegator implements Observable {
             if (record) {
                 commands.add(command);
                 notifyListeners();
-                System.out.println(command.getName());
+                System.out.println("Do " + command.getName()); //TODO issue #23
             }
             return true;
         }
@@ -119,7 +119,7 @@ public class CommandDelegator implements Observable {
                         //noinspection unchecked
                         undoableExecutor.unexecute((UndoableCommand) command);
                         notifyListeners();
-                        System.out.println(command.getName());
+                        System.out.println("Undo " + command.getName());
                         return true;
                     }
                 }

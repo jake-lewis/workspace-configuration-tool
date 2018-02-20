@@ -16,44 +16,55 @@ public class XMLConfiguration implements Configuration {
     private String projectName;
     private String projectRootPath;
     private String projectTargetPath;
+    private Document document;
     private List<Directory> directories;
     private String textContent;
 
     XMLConfiguration(Document document) {
-        document.getDocumentElement().normalize();
+        this.document = document;
+        this.document.getDocumentElement().normalize();
 
-        //XML Schema ensures that only one config and dirsRoot node can exist
-        Node configNode = document.getElementsByTagName("config").item(0);
+        updateProjectProperties();
+        updateDirectoryStructure();
+
+        try {
+            updateTextContent();
+        } catch (TransformerException e) {
+            e.printStackTrace(); //TODO improve exception
+        }
+    }
+
+    private void updateTextContent() throws TransformerException {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(document), new StreamResult(writer));
+        textContent = writer.toString();
+    }
+
+    private void updateDirectoryStructure() {
         Node rootDirsNode = document.getElementsByTagName("dirsRoot").item(0);
-        directories = new LinkedList<>();
-
-        Element configElement = (Element) configNode;
-        projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
-        projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
-        projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
-
         Node dir = rootDirsNode.getFirstChild();
+        List<Node> validNodes = new LinkedList<>();
 
         while(dir.getNextSibling()!= null){
             if (dir.getNodeType() == Node.ELEMENT_NODE) {
-                directories.add(new Directory(dir, null));
+                validNodes.add(dir);
             }
             dir = dir.getNextSibling();
         }
 
-        try {
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "no");
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-            textContent = writer.toString();
-        } catch (TransformerConfigurationException e) { //TODO improve exception handling
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
+        directories = XMLDirectoryFactory.create(validNodes);
+    }
 
+    private void updateProjectProperties() {
+        //XML Schema ensures that only one config and dirsRoot node can exist
+        Node configNode = document.getElementsByTagName("config").item(0);
+        Element configElement = (Element) configNode;
+        projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
+        projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
+        projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
     }
 
     @Override
