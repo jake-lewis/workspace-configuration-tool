@@ -1,6 +1,5 @@
 package model.configuration;
 
-import model.Directory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

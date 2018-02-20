@@ -26,7 +26,7 @@
                         <left>
                            <BorderPane BorderPane.alignment="CENTER">
                               <top>
-                                 <GridPane fx:id="propertiesPane" BorderPane.alignment="CENTER">
+                                 <GridPane fx:id="projectPropertiesPane" BorderPane.alignment="CENTER">
                                    <columnConstraints>
                                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -40,7 +40,7 @@
                                        <Label text="Project Name" />
                                        <Label text="Root Path" GridPane.rowIndex="1" />
                                        <Label text="Target Path" GridPane.rowIndex="2" />
-                                       <TextField fx:id="nameField" GridPane.columnIndex="1" />
+                                       <TextField fx:id="projectNameField" GridPane.columnIndex="1" />
                                        <TextField fx:id="rootField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                        <TextField fx:id="targetField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                     </children>
@@ -51,6 +51,34 @@
                               </padding>
                            </BorderPane>
                         </left>
+                        <right>
+                           <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                              <top>
+                                 <GridPane fx:id="nodePropertiesPane" BorderPane.alignment="CENTER">
+                                   <columnConstraints>
+                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                   </columnConstraints>
+                                   <rowConstraints>
+                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                   </rowConstraints>
+                                    <children>
+                                       <Label text="Name" />
+                                       <Label text="Prefix" GridPane.rowIndex="1" />
+                                       <Label text="Separator" GridPane.rowIndex="2" />
+                                       <TextField fx:id="nodeNameField" GridPane.columnIndex="1" />
+                                       <TextField fx:id="prefixField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                       <TextField fx:id="separatorField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    </children>
+                                    <padding>
+                                       <Insets left="5.0" right="5.0" top="10.0" />
+                                    </padding>
+                                 </GridPane>
+                              </top>
+                           </BorderPane>
+                        </right>
                             </BorderPane>
                         </content>
                     </Tab>

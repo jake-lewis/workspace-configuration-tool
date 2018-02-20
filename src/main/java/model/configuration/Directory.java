@@ -1,4 +1,4 @@
-package model;
+package model.configuration;
 
 import org.w3c.dom.Node;
 
@@ -48,18 +48,24 @@ public class Directory {
         return children;
     }
 
+    public String getName() { return name; }
+
     public String getSeparator() {
         return separator != null ? separator : "";
     }
 
-    public String getPrefix() {
-        String parentPrefix = parent != null ? parent.getPrefix() + parent.getSeparator() : "";
+    public String getDirectPrefix() {
+        return prefix;
+    }
+
+    public String getFullPrefix() {
+        String parentPrefix = parent != null ? parent.getFullPrefix() + parent.getSeparator() : "";
         return prefix != null ? parentPrefix + prefix : "";
     }
 
     @Override
     public String toString() {
-        String prefix = getPrefix().equals("") ? "" : getPrefix() + " ";
+        String prefix = getFullPrefix().equals("") ? "" : getFullPrefix() + " ";
         return prefix + name;
     }
 }

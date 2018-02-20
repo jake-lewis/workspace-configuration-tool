@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.GridPane;
-import model.Directory;
+import model.configuration.Directory;
 import model.configuration.Configuration;
 
 import java.util.List;
@@ -14,19 +14,22 @@ import java.util.List;
 public class VisualEditorController implements EditorController {
 
     private TreeView<Directory> visualEditor;
-    private TextField nameField;
+    private TextField projectNameField;
     private TextField rootField;
     private TextField targetField;
+    private TextField nodeNameField;
+    private TextField prefixField;
+    private TextField separatorField;
 
-    public VisualEditorController(TreeView visualEditor, GridPane propertiesPane) {
+    public VisualEditorController(TreeView visualEditor, GridPane projectProperties, GridPane nodeProperties) {
         this.visualEditor = visualEditor;
 
-        ObservableList<Node> gridPaneChildren = propertiesPane.getChildren();
+        ObservableList<Node> gridPaneChildren = projectProperties.getChildren();
         for (Node node : gridPaneChildren) {
             if (node.getId() != null) {
                 switch (node.getId()) {
-                    case "nameField":
-                        nameField = (TextField) node;
+                    case "projectNameField":
+                        projectNameField = (TextField) node;
                         break;
                     case "rootField":
                         rootField = (TextField) node;
@@ -36,11 +39,27 @@ public class VisualEditorController implements EditorController {
                 }
             }
         }
+
+        gridPaneChildren = nodeProperties.getChildren();
+        for (Node node : gridPaneChildren) {
+            if (node.getId() != null) {
+                switch (node.getId()) {
+                    case "nodeNameField":
+                        nodeNameField = (TextField) node;
+                        break;
+                    case "prefixField":
+                        prefixField = (TextField) node;
+                        break;
+                    case "separatorField":
+                        separatorField = (TextField) node;
+                }
+            }
+        }
     }
 
     public void populate(Configuration configuration) {
 
-        nameField.setText(configuration.getProjectName());
+        projectNameField.setText(configuration.getProjectName());
         rootField.setText(configuration.getProjectRootPath());
         targetField.setText(configuration.getProjectTargetPath());
 
@@ -49,6 +68,14 @@ public class VisualEditorController implements EditorController {
         for (Directory rootDir : directories) {
             treeRoot.getChildren().add(createTreeItem(rootDir));
         }
+
+        visualEditor.getSelectionModel().selectedItemProperty()
+                .addListener((observable, old_val, new_val) -> {
+                    TreeItem<Directory> selectedItem = new_val;
+                    nodeNameField.setText(selectedItem.getValue().getName());
+                    prefixField.setText(selectedItem.getValue().getDirectPrefix());
+                    separatorField.setText(selectedItem.getValue().getSeparator());
+                });
 
         visualEditor.setRoot(treeRoot);
         visualEditor.setShowRoot(false);

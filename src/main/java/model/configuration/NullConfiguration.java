@@ -1,7 +1,5 @@
 package model.configuration;
 
-import model.Directory;
-
 import java.util.Collections;
 import java.util.List;
 
