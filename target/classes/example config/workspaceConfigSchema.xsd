@@ -35,7 +35,7 @@
     </xs:complexType>
     <xs:complexType name="dirsRootType">
         <xs:sequence>
-            <xs:element type="dirType" name="dir"/>
+            <xs:element type="dirType" name="dir" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="dirsType">

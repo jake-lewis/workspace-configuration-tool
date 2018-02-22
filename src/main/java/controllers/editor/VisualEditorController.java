@@ -6,10 +6,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import model.commands.concrete.ExpandTreeDirCommand;
 import model.commands.concrete.OpenConfigCommand;
@@ -35,8 +33,13 @@ public class VisualEditorController implements EditorController {
 
     private boolean isExecuting = false;
 
-    public VisualEditorController(TreeView<Directory> visualEditor, GridPane projectProperties, GridPane nodeProperties) {
-        this.visualEditor = visualEditor;
+    public VisualEditorController(Tab visualEditorTab) {
+
+        BorderPane visualPane = (BorderPane) visualEditorTab.getContent();
+
+        this.visualEditor = (TreeView<Directory>) visualPane.getCenter();
+        GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
+        GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
 
         CommandDelegator.getINSTANCE().subscribe(new SelectionExecutor(), SelectTreeDirCommand.class);
         CommandDelegator.getINSTANCE().subscribe(new ExpansionExecutor(), ExpandTreeDirCommand.class);
