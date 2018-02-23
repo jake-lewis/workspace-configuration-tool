@@ -27,9 +27,12 @@ public class CommandDelegator implements Observable {
     public <C extends Command> boolean subscribe(Executor<C> executor, Class <C> clazz) {
 
         //TODO multiple classes? e.g. Class <C>... clazz
+
         //prevent duplicate subscription to a command
-        if (executors.containsKey(clazz)) {
-            return false;
+        for (Class subbedClass: executors.keySet()) {
+            if (subbedClass.isAssignableFrom(clazz)) {
+                return false;
+            }
         }
 
         executors.put(clazz, executor);
@@ -42,9 +45,13 @@ public class CommandDelegator implements Observable {
     }
 
     private Executor getExecutor(Command command) {
-        //TODO change to loop through map, using Class.isAssignableFrom
-        //i.e if command.getClass().isAssignableFrom(executors.key)
-        return executors.get(command.getClass());
+        for (Class clazz: executors.keySet()) {
+            if (clazz.isAssignableFrom(command.getClass())) {
+                return executors.get(clazz);
+            }
+        }
+
+        return null;
     }
 
     /**

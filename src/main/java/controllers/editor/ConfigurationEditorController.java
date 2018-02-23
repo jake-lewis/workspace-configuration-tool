@@ -4,7 +4,7 @@ import controllers.CommandDelegator;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
-import model.commands.concrete.DisplayConfigCommand;
+import model.commands.concrete.ConfigCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.executors.UndoableExecutor;
@@ -27,7 +27,7 @@ public class ConfigurationEditorController implements Initializable, EditorContr
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        CommandDelegator.getINSTANCE().subscribe(new DisplayConfigExecutor(), DisplayConfigCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new ConfigExecutor(), ConfigCommand.class);
         editorControllers.add(new VisualEditorController(visualEditorTab));
         editorControllers.add(new TextEditorController(textEditorTab));
         configuration = ConfigurationFactory.getNullConfig();
@@ -40,23 +40,23 @@ public class ConfigurationEditorController implements Initializable, EditorContr
         }
     }
 
-    private class DisplayConfigExecutor implements UndoableExecutor<DisplayConfigCommand> {
+    private class ConfigExecutor implements UndoableExecutor<ConfigCommand> {
 
         @Override
-        public void execute(DisplayConfigCommand command) throws Exception {
+        public void execute(ConfigCommand command) throws Exception {
             command.setPrevConfig(configuration);
             configuration = command.getNextConfig();
             populate(configuration);
         }
 
         @Override
-        public void unexecute(DisplayConfigCommand command) throws Exception {
+        public void unexecute(ConfigCommand command) throws Exception {
             configuration = command.getPrevConfig();
             populate(configuration);
         }
 
         @Override
-        public void reexecute(DisplayConfigCommand command) throws Exception {
+        public void reexecute(ConfigCommand command) throws Exception {
             configuration = command.getNextConfig();
             populate(configuration);
         }

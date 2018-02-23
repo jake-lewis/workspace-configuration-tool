@@ -4,16 +4,16 @@ import model.commands.UndoableCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 
-public class DisplayConfigCommand implements UndoableCommand {
+public abstract class ConfigCommand implements UndoableCommand {
 
     private Configuration prevConfig;
     private Configuration newConfig;
 
-    public DisplayConfigCommand(Configuration newConfiguration) {
+    public ConfigCommand(Configuration newConfiguration) {
         this(newConfiguration, ConfigurationFactory.getNullConfig());
     }
 
-    public DisplayConfigCommand(Configuration newConfiguration, Configuration previousConfiguration) {
+    public ConfigCommand(Configuration newConfiguration, Configuration previousConfiguration) {
         this.newConfig = newConfiguration;
         this.prevConfig = previousConfiguration;
     }
@@ -29,7 +29,5 @@ public class DisplayConfigCommand implements UndoableCommand {
     }
 
     @Override
-    public String getName() {
-        return "Open configuration file: " + newConfig.toString();
-    }
+    public abstract String getName();
 }

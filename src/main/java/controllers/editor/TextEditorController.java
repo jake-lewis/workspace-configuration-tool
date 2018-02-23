@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import model.ExceptionAlert;
 import model.commands.Command;
-import model.commands.concrete.DisplayConfigCommand;
+import model.commands.concrete.UpdateConfigCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.configuration.FileType;
@@ -44,7 +44,7 @@ public class TextEditorController implements EditorController {
 
     private boolean apply() {
         try {
-            Command command = new DisplayConfigCommand(ConfigurationFactory.create(textArea.getText(), FileType.XML), configuration);
+            Command command = new UpdateConfigCommand(ConfigurationFactory.create(textArea.getText(), FileType.XML), configuration);
             return CommandDelegator.getINSTANCE().publish(command);
         } catch (Exception e) {
             e.printStackTrace();
