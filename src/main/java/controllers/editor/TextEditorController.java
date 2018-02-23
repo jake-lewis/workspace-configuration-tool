@@ -1,17 +1,20 @@
 package controllers.editor;
 
+import controllers.CommandDelegator;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import model.ExceptionAlert;
+import model.commands.Command;
+import model.commands.concrete.DisplayConfigCommand;
 import model.configuration.Configuration;
+import model.configuration.ConfigurationFactory;
+import model.configuration.FileType;
 
 public class TextEditorController implements EditorController {
 
-    private String textContent;
+    private Configuration configuration;
 
     private TextArea textArea;
 
@@ -24,20 +27,32 @@ public class TextEditorController implements EditorController {
 
         for (Node item : toolbarItems) {
             switch (item.getId()) {
-                case "resetBtn" : ((Button) item).setOnAction(event -> textArea.setText(textContent));
+                case "resetBtn" : ((Button) item).setOnAction(event ->
+                        textArea.setText(this.configuration.getTextContent()));
                 break;
                 case "applyBtn" : ((Button) item).setOnAction(event -> apply());
+                break;
             }
         }
     }
 
     public void populate(Configuration configuration) {
         textArea.clear();
-        textContent = configuration.getTextContent();
-        textArea.setText(textContent);
+        this.configuration = configuration;
+        textArea.setText(this.configuration.getTextContent());
     }
 
-    private void apply() {
-        System.out.println("apply");
+    private boolean apply() {
+        try {
+            Command command = new DisplayConfigCommand(ConfigurationFactory.create(textArea.getText(), FileType.XML), configuration);
+            return CommandDelegator.getINSTANCE().publish(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            Alert alert = new ExceptionAlert(e);
+            alert.showAndWait();
+        }
+
+        return false;
     }
 }

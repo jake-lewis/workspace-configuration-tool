@@ -2,15 +2,12 @@ package controllers.editor;
 
 import controllers.CommandDelegator;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import model.commands.concrete.ExpandTreeDirCommand;
-import model.commands.concrete.OpenConfigCommand;
 import model.commands.concrete.SelectTreeDirCommand;
 import model.configuration.Directory;
 import model.configuration.Configuration;

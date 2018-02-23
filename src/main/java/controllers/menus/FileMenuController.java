@@ -1,11 +1,14 @@
 package controllers.menus;
 
 import controllers.CommandDelegator;
-import model.commands.concrete.OpenConfigCommand;
+import javafx.scene.control.Alert;
+import model.ExceptionAlert;
+import model.commands.concrete.DisplayConfigCommand;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.configuration.ConfigurationFactory;
 
 import java.io.File;
 
@@ -50,12 +53,13 @@ class FileMenuController {
             fileChooser.setInitialDirectory(new File("C:\\Git Repositories\\project\\src\\main\\resources\\example config"));
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
-                CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(file));
+                CommandDelegator.getINSTANCE().publish(new DisplayConfigCommand(ConfigurationFactory.create(file)));
             }
 
         } catch (Exception e) {
-            //TODO
             e.printStackTrace();
+            Alert alert = new ExceptionAlert(e);
+            alert.showAndWait();
         }
     }
 

@@ -4,11 +4,7 @@ import controllers.CommandDelegator;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeView;
-import javafx.scene.layout.GridPane;
-import model.configuration.Directory;
-import model.commands.concrete.OpenConfigCommand;
+import model.commands.concrete.DisplayConfigCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.executors.UndoableExecutor;
@@ -31,10 +27,10 @@ public class ConfigurationEditorController implements Initializable, EditorContr
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        CommandDelegator.getINSTANCE().subscribe(new OpenConfigExecutor(), OpenConfigCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new DisplayConfigExecutor(), DisplayConfigCommand.class);
         editorControllers.add(new VisualEditorController(visualEditorTab));
         editorControllers.add(new TextEditorController(textEditorTab));
-        configuration = ConfigurationFactory.create();
+        configuration = ConfigurationFactory.getNullConfig();
     }
 
     @Override
@@ -44,24 +40,23 @@ public class ConfigurationEditorController implements Initializable, EditorContr
         }
     }
 
-    private class OpenConfigExecutor implements UndoableExecutor<OpenConfigCommand> {
+    private class DisplayConfigExecutor implements UndoableExecutor<DisplayConfigCommand> {
 
         @Override
-        public void execute(OpenConfigCommand command) throws Exception {
+        public void execute(DisplayConfigCommand command) throws Exception {
             command.setPrevConfig(configuration);
-            configuration = ConfigurationFactory.create(command.getFile());
-            command.setNewConfig(configuration);
+            configuration = command.getNextConfig();
             populate(configuration);
         }
 
         @Override
-        public void unexecute(OpenConfigCommand command) throws Exception {
+        public void unexecute(DisplayConfigCommand command) throws Exception {
             configuration = command.getPrevConfig();
             populate(configuration);
         }
 
         @Override
-        public void reexecute(OpenConfigCommand command) throws Exception {
+        public void reexecute(DisplayConfigCommand command) throws Exception {
             configuration = command.getNextConfig();
             populate(configuration);
         }

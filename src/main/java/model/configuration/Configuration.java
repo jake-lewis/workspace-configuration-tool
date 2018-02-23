@@ -4,7 +4,7 @@ import java.text.ParseException;
 import java.util.List;
 
 public interface Configuration {
-    void setTextContent(String textContent) throws ParseException;
+    void setTextContent(String textContent) throws ParseException, InvalidConfigurationException;
 
     String getProjectName();
 

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class XMLDirectoryFactory {
-    public static List<Directory> create(List<Node> nodes) {
+    public static List<Directory> create(List<Node> nodes) throws InvalidConfigurationException {
 
         List<Directory> result = new LinkedList<>();
 
@@ -17,7 +17,7 @@ public class XMLDirectoryFactory {
         return result;
     }
 
-    public static Directory create(Node node, Directory parent) {
+    public static Directory create(Node node, Directory parent) throws InvalidConfigurationException {
         Node child = node.getFirstChild();
         Directory directory = new Directory(parent);
         List<Directory> children = new LinkedList<>();
@@ -46,6 +46,10 @@ public class XMLDirectoryFactory {
                     break;
             }
             child = child.getNextSibling();
+        }
+
+        if (directory.getName() == null) {
+            throw new InvalidConfigurationException("A <dir> tag is missing it's <name> element.");
         }
 
         return directory;

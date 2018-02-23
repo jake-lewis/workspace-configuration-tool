@@ -10,7 +10,10 @@ import org.xml.sax.SAXParseException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
@@ -27,7 +30,7 @@ public class XMLConfiguration implements Configuration {
     private List<Directory> directories;
     private String textContent;
 
-    public XMLConfiguration(File file) throws IOException {
+    public XMLConfiguration(File file) throws IOException, InvalidConfigurationException {
         try {
             InputStream stream = new FileInputStream(file);
             updateDocument(new InputSource(stream));
@@ -38,6 +41,23 @@ public class XMLConfiguration implements Configuration {
             updateTextContent();
         } catch (IOException | SAXException | ParserConfigurationException | TransformerException e) {
             throw new IOException("An error occurred while parsing the file: " + file.getPath(), e);
+        }
+    }
+
+    public XMLConfiguration(String text) throws ParseException, InvalidConfigurationException, ParserConfigurationException, TransformerException, SAXException, IOException {
+        try {
+            Reader reader = new StringReader(text);
+            updateDocument(new InputSource(reader));
+            reader.close();
+
+            updateProjectProperties();
+            updateDirectoryStructure();
+            updateTextContent();
+        } catch (SAXParseException e) {
+            throw new ParseException(e.getMessage(), e.getLineNumber());
+        } catch (IOException | SAXException | ParserConfigurationException | TransformerException e) {
+            //throw new Exception("An error occurred while parsing the text", e);
+            throw e;
         }
     }
 
@@ -58,7 +78,7 @@ public class XMLConfiguration implements Configuration {
         textContent = writer.toString();
     }
 
-    private void updateDirectoryStructure() {
+    private void updateDirectoryStructure() throws InvalidConfigurationException {
         Node rootDirsNode = document.getElementsByTagName("dirsRoot").item(0);
         Node dir = rootDirsNode.getFirstChild();
         List<Node> validNodes = new LinkedList<>();
@@ -73,17 +93,21 @@ public class XMLConfiguration implements Configuration {
         directories = XMLDirectoryFactory.create(validNodes);
     }
 
-    private void updateProjectProperties() {
+    private void updateProjectProperties() throws InvalidConfigurationException {
         //XML Schema ensures that only one config and dirsRoot node can exist
         Node configNode = document.getElementsByTagName("config").item(0);
         Element configElement = (Element) configNode;
-        projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
-        projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
-        projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
+        try {
+            projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
+            projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
+            projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
+        } catch (NullPointerException e) {
+            throw new InvalidConfigurationException("The configuration's <config> tag is incomplete");
+        }
     }
 
     @Override
-    public void setTextContent(String textContent) throws ParseException {
+    public void setTextContent(String textContent) throws ParseException, InvalidConfigurationException {
         try {
             updateDocument(new InputSource(new StringReader(textContent)));
             this.textContent = textContent;

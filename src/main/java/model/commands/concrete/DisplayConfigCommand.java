@@ -2,26 +2,20 @@ package model.commands.concrete;
 
 import model.commands.UndoableCommand;
 import model.configuration.Configuration;
+import model.configuration.ConfigurationFactory;
 
-import java.io.File;
+public class DisplayConfigCommand implements UndoableCommand {
 
-public class OpenConfigCommand implements UndoableCommand {
-
-    private File file;
     private Configuration prevConfig;
     private Configuration newConfig;
 
-    public OpenConfigCommand(File file) {
-        this(file, null);
+    public DisplayConfigCommand(Configuration newConfiguration) {
+        this(newConfiguration, ConfigurationFactory.getNullConfig());
     }
 
-    public OpenConfigCommand(File file, Configuration previousConfiguration) {
-        this.file = file;
+    public DisplayConfigCommand(Configuration newConfiguration, Configuration previousConfiguration) {
+        this.newConfig = newConfiguration;
         this.prevConfig = previousConfiguration;
-    }
-
-    public File getFile() {
-        return file;
     }
 
     public Configuration getPrevConfig() { return this.prevConfig; }
@@ -34,12 +28,8 @@ public class OpenConfigCommand implements UndoableCommand {
         return newConfig;
     }
 
-    public void setNewConfig(Configuration newConfig) {
-        this.newConfig = newConfig;
-    }
-
     @Override
     public String getName() {
-        return "Open configuration file: " + file.getName();
+        return "Open configuration file: " + newConfig.toString();
     }
 }

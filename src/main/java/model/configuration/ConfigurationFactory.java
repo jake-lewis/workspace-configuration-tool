@@ -1,20 +1,24 @@
 package model.configuration;
 
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 public class ConfigurationFactory {
 
-    public static Configuration create() {
+    public static Configuration getNullConfig() {
         return NullConfiguration.getInstance();
     }
 
-    public static Configuration create(File file) throws IOException {
+    public static Configuration create(File file) throws IOException, InvalidConfigurationException {
         if (null == file) {
             return NullConfiguration.getInstance();
         }
@@ -29,7 +33,17 @@ public class ConfigurationFactory {
         }
     }
 
-
+    public static Configuration create(String text, FileType TYPE) throws IOException, InvalidConfigurationException {
+        switch (TYPE) {
+            case XML:
+                try {
+                    return new XMLConfiguration(text);
+                } catch (ParseException | ParserConfigurationException | SAXException | TransformerException | IOException e) {
+                    e.printStackTrace();
+                }
+            default: throw new TypeNotPresentException(TYPE.name(), new IllegalArgumentException());
+        }
+    }
 
     private static String getExtension(File file) {
         String extension = "";
