@@ -13,6 +13,8 @@ public enum FileType {
         this.fileExtensions = Arrays.asList(fileExtensions);
     }
 
+    public List<String> getValues() { return this.fileExtensions; }
+
     public static FileType fromExtension(String extension) {
         for (FileType type : FileType.values()) {
             if (type.fileExtensions.contains(extension)) {

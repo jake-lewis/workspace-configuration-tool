@@ -9,8 +9,11 @@ import javafx.stage.Stage;
 import model.ExceptionAlert;
 import model.commands.concrete.OpenConfigCommand;
 import model.configuration.ConfigurationFactory;
+import model.configuration.FileType;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 class FileMenuController {
     private final Stage stage;
@@ -51,6 +54,17 @@ class FileMenuController {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open existing configuration file");
             fileChooser.setInitialDirectory(new File("C:\\Git Repositories\\project\\src\\main\\resources\\example config"));
+
+            for (FileType type : FileType.values()) {
+                if (type != FileType.UNSUPPORTED) {
+                    List<String> extensions = new LinkedList<>();
+                    for (String value : type.getValues()) {
+                        extensions.add("*." + value);
+                    }
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(type.name(), extensions));
+                }
+            }
+
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(ConfigurationFactory.create(file)));
