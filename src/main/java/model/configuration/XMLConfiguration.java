@@ -30,6 +30,8 @@ public class XMLConfiguration implements Configuration {
     private List<Directory> directories;
     private String textContent;
 
+    private XMLConfiguration() {};
+
     public XMLConfiguration(File file) throws IOException, InvalidConfigurationException {
         try {
             InputStream stream = new FileInputStream(file);
@@ -118,6 +120,92 @@ public class XMLConfiguration implements Configuration {
             throw new ParseException(e.getMessage(), e.getLineNumber());
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    public void setProjectName(String projectName) {
+        Node configNode = document.getElementsByTagName("config").item(0);
+        Element configElement = (Element) configNode;
+        configElement.getElementsByTagName("project").item(0).setTextContent(projectName);
+        this.projectName = projectName;
+    }
+
+    public void setProjectRootPath(String projectRootPath) {
+        Node configNode = document.getElementsByTagName("config").item(0);
+        Element configElement = (Element) configNode;
+        configElement.getElementsByTagName("root").item(0).setTextContent(projectRootPath);
+        this.projectRootPath = projectRootPath;
+    }
+
+    public void setProjectTargetPath(String projectTargetPath) {
+        Node configNode = document.getElementsByTagName("config").item(0);
+        Element configElement = (Element) configNode;
+        configElement.getElementsByTagName("target").item(0).setTextContent(projectTargetPath);
+        this.projectTargetPath = projectTargetPath;
+    }
+
+    public void setDirectories(List<Directory> directories) {
+
+        //TODO could be more efficient if it only redoes changed nodes
+        //Clear existing directories in document
+        Node rootDirsNode = document.getElementsByTagName("dirsRoot").item(0);
+        while (rootDirsNode.hasChildNodes()) {
+            rootDirsNode.removeChild(rootDirsNode.getFirstChild());
+        }
+
+        //Generate new directories
+        List<Node> dirNodes = createNodes(directories);
+        for (Node dir : dirNodes) {
+            rootDirsNode.appendChild(dir);
+        }
+    }
+
+    private List<Node> createNodes(List<Directory> directories) {
+        List<Node> dirNodes = new LinkedList<>();
+
+        for (Directory directory : directories) {
+            Element dir = document.createElement("dir");
+            if (!directory.getDirectPrefix().isEmpty()) {
+                Element prefix = document.createElement("prefix");
+                prefix.setTextContent(directory.getDirectPrefix());
+                dir.appendChild(prefix);
+            }
+            if (!directory.getSeparator().isEmpty()) {
+                Element separator = document.createElement("separator");
+                separator.setTextContent(directory.getSeparator());
+                dir.appendChild(separator);
+            }
+            Element name = document.createElement("name");
+            name.setTextContent(directory.getName());
+            dir.appendChild(name);
+
+            if (!directory.getChildren().isEmpty()) {
+                Element dirs = document.createElement("dirs");
+
+                List<Node> subDirs = createNodes(directory.getChildren());
+                for (Node subDir : subDirs) {
+                    dirs.appendChild(subDir);
+                }
+
+                dir.appendChild(dirs);
+            }
+            dirNodes.add(dir);
+        }
+
+        return dirNodes;
+    }
+
+    public static XMLConfiguration copy(XMLConfiguration configuration) throws InvalidConfigurationException {
+        XMLConfiguration newConfig = new XMLConfiguration();
+        newConfig.document = configuration.document;
+        try {
+            newConfig.updateProjectProperties();
+            newConfig.updateDirectoryStructure();
+            newConfig.updateTextContent();
+            return newConfig;
+        } catch (InvalidConfigurationException | TransformerException e) {
+            throw new InvalidConfigurationException("Error creating copy of configuration. " +
+                    "Original configuration is in an invalid state.", e);
         }
     }
 

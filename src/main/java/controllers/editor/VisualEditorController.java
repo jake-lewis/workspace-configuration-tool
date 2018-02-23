@@ -7,12 +7,15 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import model.ExceptionAlert;
+import model.commands.Command;
 import model.commands.concrete.ExpandTreeDirCommand;
 import model.commands.concrete.SelectTreeDirCommand;
-import model.configuration.Directory;
-import model.configuration.Configuration;
+import model.commands.concrete.UpdateConfigCommand;
+import model.configuration.*;
 import model.executors.UndoableExecutor;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class VisualEditorController implements EditorController {
@@ -29,6 +32,7 @@ public class VisualEditorController implements EditorController {
     private TextField separatorField;
 
     private boolean isExecuting = false;
+    private Configuration configuration;
 
     public VisualEditorController(Tab visualEditorTab) {
 
@@ -92,6 +96,8 @@ public class VisualEditorController implements EditorController {
 
     public void populate(Configuration configuration) {
 
+        this.configuration = configuration;
+
         projectNameField.setText(configuration.getProjectName());
         rootField.setText(configuration.getProjectRootPath());
         targetField.setText(configuration.getProjectTargetPath());
@@ -124,6 +130,30 @@ public class VisualEditorController implements EditorController {
             }
         });
         return item;
+    }
+
+    private void applyConfigChange() throws InvalidConfigurationException, Exception {
+        //TODO add support for other types of configuration
+        XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
+        newConfig.setProjectName(projectNameField.getText());
+        newConfig.setProjectRootPath(rootField.getText());
+        newConfig.setProjectTargetPath(targetField.getText());
+        apply(newConfig);
+    }
+
+    private void applyDirectoryChange() throws InvalidConfigurationException, Exception {
+        //TODO add support for other types of configuration
+        XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
+        List<Directory> directories = new LinkedList<>();
+        for (TreeItem<Directory> item : visualEditor.getRoot().getChildren()) {
+            directories.add(item.getValue());
+        }
+        newConfig.setDirectories(directories);
+        apply(newConfig);
+    }
+
+    private void apply(Configuration newConfiguration) throws Exception {
+        CommandDelegator.getINSTANCE().publish(new UpdateConfigCommand(newConfiguration, configuration));
     }
 
     private class SelectionExecutor implements UndoableExecutor<SelectTreeDirCommand> {

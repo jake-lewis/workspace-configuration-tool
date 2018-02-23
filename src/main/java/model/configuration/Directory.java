@@ -51,7 +51,10 @@ public class Directory {
         this.children = children;
     }
 
-    public void setName(String name) {
+    public void setName(String name) throws InvalidConfigurationException {
+        if (name == null || name.isEmpty()) {
+            throw new InvalidConfigurationException("Directory names must not be Null or empty");
+        }
         this.name = name;
     }
 

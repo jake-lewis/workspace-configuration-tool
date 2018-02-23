@@ -1,5 +1,7 @@
 package model.configuration;
 
+import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
