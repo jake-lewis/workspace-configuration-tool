@@ -19,7 +19,7 @@
         <center>
             <TabPane prefHeight="200.0" prefWidth="200.0" side="BOTTOM" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.121">
                 <tabs>
-                    <Tab text="Visual Editor" fx:id="visualEditorTab">
+                    <Tab fx:id="visualEditorTab" text="Visual Editor">
                         <content>
                             <BorderPane prefHeight="200.0" prefWidth="200.0">
                                 <center>
@@ -37,6 +37,8 @@
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                            </rowConstraints>
                                             <children>
                                                <Label text="Project Name" />
@@ -45,6 +47,8 @@
                                                <TextField fx:id="projectNameField" GridPane.columnIndex="1" />
                                                <TextField fx:id="rootField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                <TextField fx:id="targetField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                <Button fx:id="applyConfigBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Apply" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
+                                                <Button fx:id="resetConfigBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Reset" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
                                             </children>
                                          </GridPane>
                                       </top>
@@ -65,6 +69,8 @@
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                            </rowConstraints>
                                             <children>
                                                <Label text="Name" />
@@ -73,6 +79,8 @@
                                                <TextField fx:id="nodeNameField" GridPane.columnIndex="1" />
                                                <TextField fx:id="prefixField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                <TextField fx:id="separatorField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                       <Button fx:id="applyDirBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Apply" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
+                                       <Button fx:id="resetDirBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Reset" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
                                             </children>
                                             <padding>
                                                <Insets left="5.0" right="5.0" top="10.0" />
@@ -84,7 +92,7 @@
                             </BorderPane>
                         </content>
                     </Tab>
-                    <Tab text="Text Editor" fx:id="textEditorTab">
+                    <Tab fx:id="textEditorTab" text="Text Editor">
                         <content>
                             <BorderPane prefHeight="200.0" prefWidth="200.0">
                                 <center>

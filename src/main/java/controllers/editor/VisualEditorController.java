@@ -3,6 +3,8 @@ package controllers.editor;
 import controllers.CommandDelegator;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -73,6 +75,16 @@ public class VisualEditorController implements EditorController {
                         break;
                     case "targetField":
                         targetField = (TextField) node;
+                        break;
+                    case "applyConfigBtn" :
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                applyConfigChange();
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
                 }
             }
         }
@@ -89,6 +101,16 @@ public class VisualEditorController implements EditorController {
                         break;
                     case "separatorField":
                         separatorField = (TextField) node;
+                        break;
+                    case "applyDirBtn" :
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                applyDirectoryChange();
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
                 }
             }
         }
@@ -144,8 +166,14 @@ public class VisualEditorController implements EditorController {
     private void applyDirectoryChange() throws InvalidConfigurationException, Exception {
         //TODO add support for other types of configuration
         XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
+        TreeItem<Directory> selectedItem = visualEditor.getSelectionModel().getSelectedItem();
         List<Directory> directories = new LinkedList<>();
         for (TreeItem<Directory> item : visualEditor.getRoot().getChildren()) {
+            if (selectedItem.equals(selectedItem)) {
+                item.getValue().setPrefix(prefixField.getText());
+                item.getValue().setSeparator(separatorField.getText());
+                item.getValue().setName(nodeNameField.getText());
+            }
             directories.add(item.getValue());
         }
         newConfig.setDirectories(directories);
