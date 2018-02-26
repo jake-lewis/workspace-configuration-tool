@@ -160,6 +160,7 @@ public class VisualEditorController implements EditorController {
         newConfig.setProjectName(projectNameField.getText());
         newConfig.setProjectRootPath(rootField.getText());
         newConfig.setProjectTargetPath(targetField.getText());
+        newConfig.updateTextContent();
         apply(newConfig);
     }
 
@@ -168,16 +169,30 @@ public class VisualEditorController implements EditorController {
         XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
         TreeItem<Directory> selectedItem = visualEditor.getSelectionModel().getSelectedItem();
         List<Directory> directories = new LinkedList<>();
+
         for (TreeItem<Directory> item : visualEditor.getRoot().getChildren()) {
-            if (selectedItem.equals(selectedItem)) {
-                item.getValue().setPrefix(prefixField.getText());
-                item.getValue().setSeparator(separatorField.getText());
-                item.getValue().setName(nodeNameField.getText());
-            }
+            recurseDirectories(item, selectedItem);
             directories.add(item.getValue());
         }
+
         newConfig.setDirectories(directories);
         apply(newConfig);
+    }
+
+    private boolean recurseDirectories(TreeItem<Directory> item, TreeItem<Directory> selectedItem) throws InvalidConfigurationException {
+        if (item.equals(selectedItem)) {
+            item.getValue().setPrefix(prefixField.getText());
+            item.getValue().setSeparator(separatorField.getText());
+            item.getValue().setName(nodeNameField.getText());
+            return true;
+        } else {
+            for (TreeItem<Directory> subItem : item.getChildren()) {
+                if (recurseDirectories(subItem, selectedItem)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     private void apply(Configuration newConfiguration) throws Exception {

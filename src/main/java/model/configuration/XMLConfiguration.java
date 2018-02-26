@@ -71,10 +71,10 @@ public class XMLConfiguration implements Configuration {
         document.getDocumentElement().normalize();
     }
 
-    private void updateTextContent() throws TransformerException {
+    public void updateTextContent() throws TransformerException {
         TransformerFactory factory = TransformerFactory.newInstance();
         Transformer transformer = factory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         StringWriter writer = new StringWriter();
         transformer.transform(new DOMSource(document), new StreamResult(writer));
         textContent = writer.toString();
@@ -85,14 +85,14 @@ public class XMLConfiguration implements Configuration {
         Node dir = rootDirsNode.getFirstChild();
         List<Node> validNodes = new LinkedList<>();
 
-        while(dir.getNextSibling()!= null){
+        while(dir != null){
             if (dir.getNodeType() == Node.ELEMENT_NODE) {
                 validNodes.add(dir);
             }
             dir = dir.getNextSibling();
         }
 
-        directories = XMLDirectoryFactory.create(validNodes);
+        this.directories = XMLDirectoryFactory.create(validNodes);
     }
 
     private void updateProjectProperties() throws InvalidConfigurationException {
@@ -144,7 +144,7 @@ public class XMLConfiguration implements Configuration {
         this.projectTargetPath = projectTargetPath;
     }
 
-    public void setDirectories(List<Directory> directories) {
+    public void setDirectories(List<Directory> directories) throws InvalidConfigurationException, TransformerException {
 
         //TODO could be more efficient if it only redoes changed nodes
         //Clear existing directories in document
@@ -158,6 +158,9 @@ public class XMLConfiguration implements Configuration {
         for (Node dir : dirNodes) {
             rootDirsNode.appendChild(dir);
         }
+
+        updateDirectoryStructure();
+        updateTextContent();
     }
 
     private List<Node> createNodes(List<Directory> directories) {
@@ -165,15 +168,19 @@ public class XMLConfiguration implements Configuration {
 
         for (Directory directory : directories) {
             Element dir = document.createElement("dir");
-            if (!directory.getDirectPrefix().isEmpty()) {
-                Element prefix = document.createElement("prefix");
-                prefix.setTextContent(directory.getDirectPrefix());
-                dir.appendChild(prefix);
+            if (directory.getDirectPrefix() != null) {
+                if (!directory.getDirectPrefix().isEmpty()) {
+                    Element prefix = document.createElement("prefix");
+                    prefix.setTextContent(directory.getDirectPrefix());
+                    dir.appendChild(prefix);
+                }
             }
-            if (!directory.getSeparator().isEmpty()) {
-                Element separator = document.createElement("separator");
-                separator.setTextContent(directory.getSeparator());
-                dir.appendChild(separator);
+            if (directory.getSeparator() != null) {
+                if (!directory.getSeparator().isEmpty()) {
+                    Element separator = document.createElement("separator");
+                    separator.setTextContent(directory.getSeparator());
+                    dir.appendChild(separator);
+                }
             }
             Element name = document.createElement("name");
             name.setTextContent(directory.getName());

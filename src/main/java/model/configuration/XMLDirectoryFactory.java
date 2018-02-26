@@ -22,7 +22,7 @@ public class XMLDirectoryFactory {
         Directory directory = new Directory(parent);
         List<Directory> children = new LinkedList<>();
 
-        while(child.getNextSibling() != null) {
+        while(child != null) {
             switch (child.getNodeName()) {
                 case "name":
                     directory.setName(child.getTextContent());
@@ -36,7 +36,7 @@ public class XMLDirectoryFactory {
                 case "dirs":
                     Node subNode = child.getFirstChild();
 
-                    while (subNode.getNextSibling() != null) {
+                    while (subNode != null) {
                         if (subNode.getNodeType() == Node.ELEMENT_NODE) {
                             children.add(XMLDirectoryFactory.create(subNode, directory));
                         }
