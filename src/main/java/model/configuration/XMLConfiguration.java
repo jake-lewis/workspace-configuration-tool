@@ -3,6 +3,7 @@ package model.configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -96,6 +97,7 @@ public class XMLConfiguration implements Configuration {
         Transformer transformer = factory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         StringWriter writer = new StringWriter();
+        clean(document);
         transformer.transform(new DOMSource(document), new StreamResult(writer));
         textContent = writer.toString();
     }
@@ -132,13 +134,13 @@ public class XMLConfiguration implements Configuration {
     public void setTextContent(String textContent) throws ParseException, InvalidConfigurationException {
         try {
             updateDocument(new InputSource(new StringReader(textContent)));
-            this.textContent = textContent;
+            updateTextContent();
 
             updateProjectProperties();
             updateDirectoryStructure();
         } catch (SAXParseException e) {
             throw new ParseException(e.getMessage(), e.getLineNumber());
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (TransformerException | ParserConfigurationException | SAXException | IOException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -233,6 +235,28 @@ public class XMLConfiguration implements Configuration {
         } catch (InvalidConfigurationException | TransformerException e) {
             throw new InvalidConfigurationException("Error creating copy of configuration. " +
                     "Original configuration is in an invalid state.", e);
+        }
+    }
+
+    public static void clean(Node node)
+    {
+        NodeList childNodes = node.getChildNodes();
+
+        for (int n = childNodes.getLength() - 1; n >= 0; n--)
+        {
+            Node child = childNodes.item(n);
+            short nodeType = child.getNodeType();
+
+            if (nodeType == Node.ELEMENT_NODE)
+                clean(child);
+            else if (nodeType == Node.TEXT_NODE)
+            {
+                String trimmedNodeVal = child.getNodeValue().trim();
+                if (trimmedNodeVal.length() == 0)
+                    node.removeChild(child);
+                else
+                    child.setNodeValue(trimmedNodeVal);
+            }
         }
     }
 
