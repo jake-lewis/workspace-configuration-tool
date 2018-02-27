@@ -117,13 +117,15 @@ public class ConfigurationFactory {
                 dir.setPrefix(prefixMatcher.group(1));
                 dir.setName(prefixMatcher.group(2));
 
-                //Get separator, only uses first child for simplicity
-                List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
-                if (!children.isEmpty()) {
-                    Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
-                    Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
-                    while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
-                        parent.setSeparator(separatorMatcher.group(1));
+                if (parent != null) {
+                    //Get separator, only uses first child for simplicity
+                    List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
+                    if (!children.isEmpty()) {
+                        Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
+                        Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
+                        while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
+                            parent.setSeparator(separatorMatcher.group(1));
+                        }
                     }
                 }
             } else if (nameMatcher.find()) { //else if only has name
