@@ -1,18 +1,18 @@
 package model.configuration;
 
-import javafx.collections.ObservableList;
-import javafx.scene.control.TreeItem;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.EnumSet;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ConfigurationFactory {
 
@@ -91,5 +91,52 @@ public class ConfigurationFactory {
             default:
                 throw new TypeNotPresentException(TYPE.name(), new IllegalArgumentException());
         }
+    }
+
+    public static List<Directory> directoriesFromFolder(File parentFolder) throws InvalidConfigurationException {
+        return directoriesFromFolder(parentFolder, null);
+    }
+
+    private static List<Directory> directoriesFromFolder(File parentFolder, Directory parent) throws InvalidConfigurationException {
+        List<Directory> directories = new LinkedList<>();
+        List<File> dirs = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
+        dirs = new LinkedList<>(dirs);
+
+        for (File folder : dirs) {
+            Directory dir = new Directory(parent);
+
+            //set dir properties
+            Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
+            Matcher prefixMatcher = prefixPattern.matcher(folder.getName());
+
+            Pattern namePattern = Pattern.compile("(.*)");
+            Matcher nameMatcher = namePattern.matcher(folder.getName());
+
+            //if has prefix
+            if (prefixMatcher.find()) {
+                dir.setPrefix(prefixMatcher.group(1));
+                dir.setName(prefixMatcher.group(2));
+
+                //Get separator, only uses first child for simplicity
+                List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
+                if (!children.isEmpty()) {
+                    Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
+                    Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
+                    while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
+                        parent.setSeparator(separatorMatcher.group(1));
+                    }
+                }
+            } else if (nameMatcher.find()) { //else if only has name
+                dir.setName(nameMatcher.group(1));
+            } else {
+                throw new InvalidConfigurationException("Error parsing folder: " + folder.getName()
+                        + ". A valid directory name could not be found");
+            }
+
+            dir.setChildren(directoriesFromFolder(folder, dir));
+            directories.add(dir);
+        }
+
+        return directories;
     }
 }

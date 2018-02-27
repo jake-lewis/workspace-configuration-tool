@@ -18,9 +18,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.LinkedList;
+import java.util.List;
 
 public class XMLConfiguration implements Configuration {
 
@@ -45,8 +44,7 @@ public class XMLConfiguration implements Configuration {
                 this.setProjectName(file.getName());
                 this.setProjectTargetPath(file.getPath());
 
-                List<Directory> testDirs = parseFolder(file, null);
-                this.setDirectories(testDirs);
+                this.setDirectories(ConfigurationFactory.directoriesFromFolder(file));
 
                 updateTextContent();
 
@@ -83,49 +81,6 @@ public class XMLConfiguration implements Configuration {
             //throw new Exception("An error occurred while parsing the text", e);
             throw e;
         }
-    }
-
-    private List<Directory> parseFolder(File parentFolder, Directory parent) throws InvalidConfigurationException {
-        List<Directory> directories = new LinkedList<>();
-        List<File> dirs = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
-        dirs = new LinkedList<>(dirs);
-
-        for (File folder : dirs) {
-            Directory dir = new Directory(parent);
-
-            //set dir properties
-            Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
-            Matcher prefixMatcher = prefixPattern.matcher(folder.getName());
-
-            Pattern namePattern = Pattern.compile("(.*)");
-            Matcher nameMatcher = namePattern.matcher(folder.getName());
-
-            //if has prefix
-            if (prefixMatcher.find()) {
-                dir.setPrefix(prefixMatcher.group(1));
-                dir.setName(prefixMatcher.group(2));
-
-                //Get separator, only uses first child for simplicity
-                List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
-                if (!children.isEmpty()) {
-                    Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
-                    Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
-                    while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
-                        parent.setSeparator(separatorMatcher.group(1));
-                    }
-                }
-            } else if (nameMatcher.find()) { //else if only has name
-                dir.setName(nameMatcher.group(1));
-            } else {
-                throw new InvalidConfigurationException("Error parsing folder: " + folder.getName()
-                        + ". A valid directory name could not be found");
-            }
-
-            dir.setChildren(parseFolder(folder, dir));
-            directories.add(dir);
-        }
-
-        return directories;
     }
 
     private void updateDocument(InputSource source) throws ParserConfigurationException, SAXException, IOException {
