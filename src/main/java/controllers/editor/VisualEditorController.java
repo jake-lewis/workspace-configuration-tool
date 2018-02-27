@@ -126,8 +126,10 @@ public class VisualEditorController implements EditorController {
 
         List<Directory> directories = configuration.getDirectories();
         TreeItem<Directory> treeRoot = new TreeItem<>();
-        for (Directory rootDir : directories) {
-            treeRoot.getChildren().add(createTreeItem(rootDir));
+        if (directories != null) {
+            for (Directory rootDir : directories) {
+                treeRoot.getChildren().add(createTreeItem(rootDir));
+            }
         }
 
         visualEditor.setRoot(treeRoot);
