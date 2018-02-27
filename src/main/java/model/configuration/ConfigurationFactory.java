@@ -1,5 +1,6 @@
 package model.configuration;
 
+import model.ExceptionAlert;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,7 +51,7 @@ public class ConfigurationFactory {
                 try {
                     return new XMLConfiguration(text);
                 } catch (ParseException | ParserConfigurationException | SAXException | TransformerException | IOException e) {
-                    e.printStackTrace();
+                    throw new InvalidConfigurationException(e.getMessage(), e);
                 }
             default:
                 throw new TypeNotPresentException(TYPE.name(), new IllegalArgumentException());
