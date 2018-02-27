@@ -9,7 +9,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.ExceptionAlert;
+import model.commands.concrete.CloseConfigCommand;
 import model.commands.concrete.OpenConfigCommand;
+import model.commands.concrete.SaveConfigCommand;
 import model.configuration.ConfigurationFactory;
 import model.configuration.FileType;
 
@@ -19,6 +21,8 @@ import java.util.List;
 
 class FileMenuController {
     private final Stage stage;
+
+    private File lastSavedFile;
 
     FileMenuController(Stage stage, Menu menu) {
         this.stage = stage;
@@ -96,6 +100,7 @@ class FileMenuController {
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(ConfigurationFactory.create(file)));
+                lastSavedFile = file;
             }
 
         } catch (Exception e) {
@@ -118,14 +123,40 @@ class FileMenuController {
     }
 
     private void save() {
-        System.out.println("Save");
+        if (lastSavedFile != null) {
+            try {
+                CommandDelegator.getINSTANCE().publish(new SaveConfigCommand(lastSavedFile));
+            } catch (Exception e) {
+                ExceptionAlert alert = new ExceptionAlert(e);
+                alert.showAndWait();
+            }
+        } else {
+            saveAs();
+        }
     }
 
     private void saveAs() {
-        System.out.println("Save As");
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Configuration");
+        populateExtensions(fileChooser);
+        File file = fileChooser.showSaveDialog(stage);
+        lastSavedFile = file;
+        if (file != null) {
+            try {
+                CommandDelegator.getINSTANCE().publish(new SaveConfigCommand(file));
+            } catch (Exception e) {
+                ExceptionAlert alert = new ExceptionAlert(e);
+                alert.showAndWait();
+            }
+        }
     }
 
     private void close() {
-        System.out.println("Close");
+        lastSavedFile = null;
+        try {
+            CommandDelegator.getINSTANCE().publish(new CloseConfigCommand());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

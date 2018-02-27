@@ -39,7 +39,9 @@ public class TextEditorController implements EditorController {
     public void populate(Configuration configuration) {
         textArea.clear();
         this.configuration = configuration;
-        textArea.setText(this.configuration.getTextContent());
+        if (configuration != null) {
+            textArea.setText(this.configuration.getTextContent());
+        }
     }
 
     private boolean apply() {

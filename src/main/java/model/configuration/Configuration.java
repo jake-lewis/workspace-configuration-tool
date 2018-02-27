@@ -1,5 +1,6 @@
 package model.configuration;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.List;
 

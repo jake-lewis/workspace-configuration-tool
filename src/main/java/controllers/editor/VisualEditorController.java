@@ -120,20 +120,27 @@ public class VisualEditorController implements EditorController {
 
         this.configuration = configuration;
 
-        projectNameField.setText(configuration.getProjectName());
-        rootField.setText(configuration.getProjectRootPath());
-        targetField.setText(configuration.getProjectTargetPath());
+        if (configuration != null) {
+            projectNameField.setText(configuration.getProjectName());
+            rootField.setText(configuration.getProjectRootPath());
+            targetField.setText(configuration.getProjectTargetPath());
 
-        List<Directory> directories = configuration.getDirectories();
-        TreeItem<Directory> treeRoot = new TreeItem<>();
-        if (directories != null) {
-            for (Directory rootDir : directories) {
-                treeRoot.getChildren().add(createTreeItem(rootDir));
+            List<Directory> directories = configuration.getDirectories();
+            TreeItem<Directory> treeRoot = new TreeItem<>();
+            if (directories != null) {
+                for (Directory rootDir : directories) {
+                    treeRoot.getChildren().add(createTreeItem(rootDir));
+                }
             }
-        }
 
-        visualEditor.setRoot(treeRoot);
-        visualEditor.setShowRoot(false);
+            visualEditor.setRoot(treeRoot);
+            visualEditor.setShowRoot(false);
+        } else {
+            projectNameField.setText(null);
+            rootField.setText(null);
+            targetField.setText(null);
+            this.visualEditor.setRoot(null);
+        }
     }
 
     private TreeItem createTreeItem(Directory dir) {

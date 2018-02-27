@@ -1,5 +1,6 @@
 package model.configuration;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,5 +24,20 @@ public enum FileType {
         }
 
         return UNSUPPORTED;
+    }
+
+    public static FileType fromFile(File file) {
+        return fromExtension(getExtension(file));
+    }
+
+    private static String getExtension(File file) {
+        String extension = "";
+
+        int i = file.getName().lastIndexOf('.');
+        if (i > 0) {
+            extension = file.getName().substring(i + 1);
+        }
+
+        return extension;
     }
 }

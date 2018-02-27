@@ -26,7 +26,7 @@ public class ConfigurationFactory {
             return NullConfiguration.getInstance();
         }
 
-        FileType type = FileType.fromExtension(getExtension(file));
+        FileType type = FileType.fromFile(file);
 
         switch (type) {
             case XML:
@@ -56,17 +56,6 @@ public class ConfigurationFactory {
             default:
                 throw new TypeNotPresentException(TYPE.name(), new IllegalArgumentException());
         }
-    }
-
-    private static String getExtension(File file) {
-        String extension = "";
-
-        int i = file.getName().lastIndexOf('.');
-        if (i > 0) {
-            extension = file.getName().substring(i + 1);
-        }
-
-        return extension;
     }
 
     public static Configuration create(FileType TYPE) throws InvalidConfigurationException {

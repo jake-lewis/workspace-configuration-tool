@@ -238,19 +238,30 @@ public class XMLConfiguration implements Configuration {
         }
     }
 
-    public static void clean(Node node)
-    {
+    public static void save(XMLConfiguration configuration, File file) throws IOException, TransformerException {
+        configuration.save(file);
+    }
+
+    private void save(File file) throws IOException, TransformerException {
+        DOMSource source = new DOMSource(document);
+        FileWriter writer = new FileWriter(file);
+        StreamResult result = new StreamResult(writer);
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.transform(source, result);
+    }
+
+    public static void clean(Node node) {
         NodeList childNodes = node.getChildNodes();
 
-        for (int n = childNodes.getLength() - 1; n >= 0; n--)
-        {
+        for (int n = childNodes.getLength() - 1; n >= 0; n--) {
             Node child = childNodes.item(n);
             short nodeType = child.getNodeType();
 
             if (nodeType == Node.ELEMENT_NODE)
                 clean(child);
-            else if (nodeType == Node.TEXT_NODE)
-            {
+            else if (nodeType == Node.TEXT_NODE) {
                 String trimmedNodeVal = child.getNodeValue().trim();
                 if (trimmedNodeVal.length() == 0)
                     node.removeChild(child);
