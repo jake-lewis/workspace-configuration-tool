@@ -54,9 +54,9 @@
                                 <center>
                                     <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                                         <items>
-                                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                            <BorderPane fx:id="rootPane" prefHeight="200.0" prefWidth="200.0">
                                                 <center>
-                                                    <TreeView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                                    <TreeView fx:id="rootVisualEditor" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                                 </center>
                                                 <top>
                                                     <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -66,7 +66,7 @@
                                                     </ToolBar>
                                                 </top>
                                             </BorderPane>
-                                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                            <BorderPane fx:id="targetPane" prefHeight="200.0" prefWidth="200.0">
                                                 <center>
                                                     <TreeView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                                 </center>

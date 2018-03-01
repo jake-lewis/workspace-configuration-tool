@@ -11,10 +11,7 @@ import model.ExceptionAlert;
 import model.commands.concrete.ExpandTreeDirCommand;
 import model.commands.concrete.SelectTreeDirCommand;
 import model.commands.concrete.UpdateConfigCommand;
-import model.configuration.Configuration;
-import model.configuration.Directory;
-import model.configuration.InvalidConfigurationException;
-import model.configuration.XMLConfiguration;
+import model.configuration.*;
 import model.executors.UndoableExecutor;
 
 import java.util.LinkedList;
@@ -120,7 +117,7 @@ public class VisualEditorController implements EditorController {
 
         this.configuration = configuration;
 
-        if (configuration != null) {
+        if (!this.configuration.equals(null)) {
             projectNameField.setText(configuration.getProjectName());
             rootField.setText(configuration.getProjectRootPath());
             targetField.setText(configuration.getProjectTargetPath());
