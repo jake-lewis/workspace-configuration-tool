@@ -1,21 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 
 <Tab text="Workspace Editor" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.editor.WorkspaceEditorController">
     <BorderPane prefHeight="200.0" prefWidth="200.0">
         <center>
             <TabPane prefHeight="200.0" prefWidth="200.0" side="BOTTOM" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.121">
-            <tabs>
-               <Tab text="Untitled Tab">
-                 <content>
-                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                 </content>
-               </Tab>
-            </tabs></TabPane>
+                <tabs>
+                    <Tab fx:id="applyConfigTab" text="Apply Configuration">
+                        <content>
+                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                <left>
+                                    <BorderPane BorderPane.alignment="CENTER">
+                                        <top>
+                                            <GridPane fx:id="projectPropertiesPane" BorderPane.alignment="CENTER">
+                                                <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+                                                </columnConstraints>
+                                                <rowConstraints>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                </rowConstraints>
+                                                <children>
+                                                    <Label text="Project Name" />
+                                                    <Label text="Root Path" GridPane.rowIndex="1" />
+                                                    <Label text="Target Path" GridPane.rowIndex="2" />
+                                                    <TextField fx:id="projectNameField" editable="false" GridPane.columnIndex="1" />
+                                                    <TextField fx:id="rootField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    <TextField fx:id="targetField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                </children>
+                                            </GridPane>
+                                        </top>
+                                        <padding>
+                                            <Insets left="5.0" right="5.0" top="10.0" />
+                                        </padding>
+                                    </BorderPane>
+                                </left>
+                                <center>
+                                    <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                        <items>
+                                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                                <center>
+                                                    <TreeView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                                </center>
+                                                <top>
+                                                    <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                                        <items>
+                                                            <Label text="Configuration Root" />
+                                                        </items>
+                                                    </ToolBar>
+                                                </top>
+                                            </BorderPane>
+                                            <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                                <center>
+                                                    <TreeView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                                </center>
+                                                <top>
+                                                    <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                                        <items>
+                                                            <Label text="Configuration Target" />
+                                                        </items>
+                                                    </ToolBar>
+                                                </top>
+                                            </BorderPane>
+                                        </items>
+                                    </SplitPane>
+                                </center>
+                            </BorderPane>
+                        </content>
+                    </Tab>
+                </tabs>
+            </TabPane>
         </center>
     </BorderPane>
 </Tab>
