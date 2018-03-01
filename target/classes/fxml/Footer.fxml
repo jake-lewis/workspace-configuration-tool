@@ -5,6 +5,6 @@
 
 <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
    <items>
-      <Label text="Version 0.1" />
+      <Label text="Version 0.5" />
    </items>
 </ToolBar>
