@@ -147,7 +147,9 @@ public class VisualEditorController implements EditorController {
         TreeItem<Directory> item = new TreeItem<>(dir);
         List<Directory> children = dir.getChildren();
         for (Directory child : children) {
-            item.getChildren().add(createTreeItem(child));
+            if (!child.isFile()) {
+                item.getChildren().add(createTreeItem(child));
+            }
         }
 
         item.expandedProperty().addListener((observable, oldValue, newValue) -> {

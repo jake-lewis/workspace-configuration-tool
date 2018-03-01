@@ -1,6 +1,5 @@
 package model.configuration;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,9 +10,13 @@ public class Directory {
     private String separator;
     private Directory parent;
     private List<Directory> children = new LinkedList<>();
+    private boolean isFile;
 
     public Directory(Directory parent) {
         this(null, null, null, parent);
+    }
+    public Directory(Directory parent, boolean isFile) {
+        this(null, null, null, parent, isFile);
     }
 
     public Directory(String name, String prefix, String separator, Directory parent) {
@@ -21,6 +24,15 @@ public class Directory {
         this.prefix = prefix;
         this.separator = separator;
         this.parent = parent;
+        this.isFile = false;
+    }
+
+    public Directory(String name, String prefix, String separator, Directory parent, boolean isFile) {
+        this.name = name;
+        this.prefix = prefix;
+        this.separator = separator;
+        this.parent = parent;
+        this.isFile = isFile;
     }
 
     public List<Directory> getChildren() {
@@ -40,6 +52,10 @@ public class Directory {
     public String getFullPrefix() {
         String parentPrefix = parent != null ? parent.getFullPrefix() + parent.getSeparator() : "";
         return prefix != null ? parentPrefix + prefix : "";
+    }
+
+    public boolean isFile() {
+        return isFile;
     }
 
     @Override

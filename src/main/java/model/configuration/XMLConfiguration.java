@@ -37,6 +37,10 @@ public class XMLConfiguration implements Configuration {
     ;
 
     public XMLConfiguration(File file) throws IOException, InvalidConfigurationException {
+        this(file, false);
+    }
+
+    public XMLConfiguration(File file, boolean includeFiles) throws IOException, InvalidConfigurationException {
         if (file.isDirectory()) {
             XMLConfiguration config = (XMLConfiguration) ConfigurationFactory.create(FileType.XML);
             try {
@@ -45,7 +49,7 @@ public class XMLConfiguration implements Configuration {
                 this.setProjectName(file.getName());
                 this.setProjectTargetPath(file.getPath());
 
-                this.setDirectories(ConfigurationFactory.directoriesFromFolder(file));
+                this.setDirectories(ConfigurationFactory.directoriesFromFolder(file, includeFiles));
 
                 updateTextContent();
 
@@ -189,36 +193,38 @@ public class XMLConfiguration implements Configuration {
         List<Node> dirNodes = new LinkedList<>();
 
         for (Directory directory : directories) {
-            Element dir = document.createElement("dir");
-            if (directory.getDirectPrefix() != null) {
-                if (!directory.getDirectPrefix().isEmpty()) {
-                    Element prefix = document.createElement("prefix");
-                    prefix.setTextContent(directory.getDirectPrefix());
-                    dir.appendChild(prefix);
+            if (!directory.isFile()) {
+                Element dir = document.createElement("dir");
+                if (directory.getDirectPrefix() != null) {
+                    if (!directory.getDirectPrefix().isEmpty()) {
+                        Element prefix = document.createElement("prefix");
+                        prefix.setTextContent(directory.getDirectPrefix());
+                        dir.appendChild(prefix);
+                    }
                 }
-            }
-            if (directory.getSeparator() != null) {
-                if (!directory.getSeparator().isEmpty()) {
-                    Element separator = document.createElement("separator");
-                    separator.setTextContent(directory.getSeparator());
-                    dir.appendChild(separator);
+                if (directory.getSeparator() != null) {
+                    if (!directory.getSeparator().isEmpty()) {
+                        Element separator = document.createElement("separator");
+                        separator.setTextContent(directory.getSeparator());
+                        dir.appendChild(separator);
+                    }
                 }
-            }
-            Element name = document.createElement("name");
-            name.setTextContent(directory.getName());
-            dir.appendChild(name);
+                Element name = document.createElement("name");
+                name.setTextContent(directory.getName());
+                dir.appendChild(name);
 
-            if (!directory.getChildren().isEmpty()) {
-                Element dirs = document.createElement("dirs");
+                if (!directory.getChildren().isEmpty()) {
+                    Element dirs = document.createElement("dirs");
 
-                List<Node> subDirs = createNodes(directory.getChildren());
-                for (Node subDir : subDirs) {
-                    dirs.appendChild(subDir);
+                    List<Node> subDirs = createNodes(directory.getChildren());
+                    for (Node subDir : subDirs) {
+                        dirs.appendChild(subDir);
+                    }
+
+                    dir.appendChild(dirs);
                 }
-
-                dir.appendChild(dirs);
+                dirNodes.add(dir);
             }
-            dirNodes.add(dir);
         }
 
         return dirNodes;

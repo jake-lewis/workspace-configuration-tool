@@ -84,49 +84,59 @@ public class ConfigurationFactory {
     }
 
     public static List<Directory> directoriesFromFolder(File parentFolder) throws InvalidConfigurationException {
-        return directoriesFromFolder(parentFolder, null);
+        return directoriesFromFolder(parentFolder, null, false);
     }
 
-    private static List<Directory> directoriesFromFolder(File parentFolder, Directory parent) throws InvalidConfigurationException {
+    public static List<Directory> directoriesFromFolder(File parentFolder, boolean includeFiles) throws InvalidConfigurationException {
+        return directoriesFromFolder(parentFolder, null, includeFiles);
+    }
+
+    private static List<Directory> directoriesFromFolder(File parentFolder, Directory parent, boolean includeFiles) throws InvalidConfigurationException {
         List<Directory> directories = new LinkedList<>();
-        List<File> dirs = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
+        List<File> dirs = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles()));
         dirs = new LinkedList<>(dirs);
 
-        for (File folder : dirs) {
-            Directory dir = new Directory(parent);
+        for (File file : dirs) {
 
-            //set dir properties
-            Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
-            Matcher prefixMatcher = prefixPattern.matcher(folder.getName());
+            if (file.isDirectory()) {
+                Directory dir = new Directory(parent);
+                //set dir properties
+                Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
+                Matcher prefixMatcher = prefixPattern.matcher(file.getName());
 
-            Pattern namePattern = Pattern.compile("(.*)");
-            Matcher nameMatcher = namePattern.matcher(folder.getName());
+                Pattern namePattern = Pattern.compile("(.*)");
+                Matcher nameMatcher = namePattern.matcher(file.getName());
 
-            //if has prefix
-            if (prefixMatcher.find()) {
-                dir.setPrefix(prefixMatcher.group(1));
-                dir.setName(prefixMatcher.group(2));
+                //if has prefix
+                if (prefixMatcher.find()) {
+                    dir.setPrefix(prefixMatcher.group(1));
+                    dir.setName(prefixMatcher.group(2));
 
-                if (parent != null) {
-                    //Get separator, only uses first child for simplicity
-                    List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
-                    if (!children.isEmpty()) {
-                        Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
-                        Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
-                        while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
-                            parent.setSeparator(separatorMatcher.group(1));
+                    if (parent != null) {
+                        //Get separator, only uses first child for simplicity
+                        List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
+                        if (!children.isEmpty()) {
+                            Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
+                            Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
+                            while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
+                                parent.setSeparator(separatorMatcher.group(1));
+                            }
                         }
                     }
+                } else if (nameMatcher.find()) { //else if only has name
+                    dir.setName(nameMatcher.group(1));
+                } else {
+                    throw new InvalidConfigurationException("Error parsing folder: " + file.getName()
+                            + ". A valid directory name could not be found");
                 }
-            } else if (nameMatcher.find()) { //else if only has name
-                dir.setName(nameMatcher.group(1));
-            } else {
-                throw new InvalidConfigurationException("Error parsing folder: " + folder.getName()
-                        + ". A valid directory name could not be found");
-            }
 
-            dir.setChildren(directoriesFromFolder(folder, dir));
-            directories.add(dir);
+                dir.setChildren(directoriesFromFolder(file, dir, includeFiles));
+                directories.add(dir);
+            } else if (includeFiles) {
+                Directory dir = new Directory(parent, true);
+                dir.setName(file.getName());
+                directories.add(dir);
+            }
         }
 
         return directories;
