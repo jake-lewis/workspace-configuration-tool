@@ -70,6 +70,7 @@ class FileMenuController {
     private void newFileEmpty() {
         try {
             CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(ConfigurationFactory.create(FileType.XML)));
+            lastSavedFile = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,6 +84,7 @@ class FileMenuController {
             File directory = directoryChooser.showDialog(stage);
             if (directory != null) {
                 CommandDelegator.getINSTANCE().publish(new OpenConfigCommand(ConfigurationFactory.create(directory, FileType.XML)));
+                lastSavedFile = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
