@@ -22,6 +22,7 @@ public class Main extends Application {
 
         ObservableList<Tab> features = ((TabPane) root.getCenter()).getTabs();
         features.add(FXMLLoader.load(getClass().getResource("/fxml/ConfigurationEditor.fxml")));
+        features.add(FXMLLoader.load(getClass().getResource("/fxml/WorkspaceEditor.fxml")));
 
         root.setBottom(FXMLLoader.load(getClass().getResource("/fxml/Footer.fxml")));
     }
