@@ -1,20 +1,20 @@
 package controllers.editor;
 
-import controllers.CommandDelegator;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import model.ExceptionAlert;
-import model.commands.concrete.ExpandTreeDirCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.configuration.Directory;
 import model.configuration.InvalidConfigurationException;
 
 import java.io.File;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ApplyConfigurationController implements EditorController {
 
@@ -62,6 +62,9 @@ public class ApplyConfigurationController implements EditorController {
                     case "targetField":
                         targetField = (TextField) node;
                         break;
+                    case "rootToTargetBtn":
+                        ((Button) node).setOnAction(event -> rootToTarget());
+                        break;
                 }
             }
         }
@@ -70,6 +73,9 @@ public class ApplyConfigurationController implements EditorController {
     @Override
     public void populate(Configuration configuration) {
         this.configuration = configuration;
+
+        //The value itself should not be null,
+        // but this will return true if it is an instance of NullConfiguration
         if (!this.configuration.equals(null)) {
 
             projectNameField.setText(configuration.getProjectName());
@@ -80,13 +86,13 @@ public class ApplyConfigurationController implements EditorController {
                 if (configuration.getProjectRootPath() != null) {
                     File file = new File(configuration.getProjectRootPath());
                     if (file.isDirectory()) {
-                        populateEditor(file, rootVisualEditor);
+                        rootDirectories = populateEditor(file, rootVisualEditor);
                     }
                 }
                 if (configuration.getProjectTargetPath() != null) {
                     File file = new File(configuration.getProjectTargetPath());
                     if (file.isDirectory()) {
-                        populateEditor(file, targetVisualEditor);
+                        targetDirectories = populateEditor(file, targetVisualEditor);
                     }
                 }
             } catch (InvalidConfigurationException e) {
@@ -102,7 +108,7 @@ public class ApplyConfigurationController implements EditorController {
         }
     }
 
-    private void populateEditor(File file, TreeView<Directory> treeView) throws InvalidConfigurationException {
+    private List<Directory> populateEditor(File file, TreeView<Directory> treeView) throws InvalidConfigurationException {
         List<Directory> directories = ConfigurationFactory.directoriesFromFolder(
                 file, true);
 
@@ -115,6 +121,7 @@ public class ApplyConfigurationController implements EditorController {
 
         treeView.setRoot(treeRoot);
         treeView.setShowRoot(false);
+        return directories;
     }
 
     private TreeItem createTreeItem(Directory dir) {
@@ -135,5 +142,70 @@ public class ApplyConfigurationController implements EditorController {
 //            }
 //        });
         return item;
+    }
+
+    private void rootToTarget() {
+        if (!this.configuration.equals(null)) {
+            if (this.configuration.getProjectRootPath() != null) {
+                //TODO uses currently populated list of directories, maybe should actually parse folder?
+                File targetDirectory = new File(this.configuration.getProjectTargetPath());
+                List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(targetDirectory.listFiles(File::isDirectory))));
+                for (File child : children) {
+                    if (child.isDirectory()) {
+                        ListIterator<Directory> directoryList = (new LinkedList<>(rootDirectories)).listIterator();
+                        moveToTarget(child, directoryList);
+                    }
+                }
+            }
+        }
+    }
+
+    private void moveToTarget(File targetFolder, ListIterator<Directory> directoryList) {
+        List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(targetFolder.listFiles(File::isDirectory))));
+
+        String fullName = targetFolder.getName();
+        Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
+        Pattern fullPrefixPattern = Pattern.compile("(.*) (.*)");
+        Pattern enumPrefixPattern = Pattern.compile("(.+?)(?:-\\d{1,5})? ");
+        Matcher prefixMatcher = prefixPattern.matcher(fullName);
+
+        if (prefixMatcher.find()) {
+            String folderName = prefixMatcher.group(2);
+            int nameStart = fullName.lastIndexOf(folderName);
+            String folderFullPrefix = fullName.substring(0, nameStart - 1);
+
+            while (directoryList.hasNext()) {
+                Directory current = directoryList.next();
+                Matcher dirPrefixMatcher = fullPrefixPattern.matcher(current.getName());
+
+                if (dirPrefixMatcher.find()) {
+                    String dirFullPrefix = dirPrefixMatcher.group(1);
+                    if (dirFullPrefix.isEmpty()) {
+                        break;
+                    }
+
+                    Matcher enumPrefixMatcher = enumPrefixPattern.matcher(dirFullPrefix);
+                    if (dirFullPrefix.equals(folderFullPrefix)) {
+                        System.out.println("Match found: " + current.getName() + " || Removing...");
+                        directoryList.remove();
+                    } else if (enumPrefixMatcher.find()) {
+                        if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
+                            System.out.println("Match found: " + current.getName() + " || Removing...");
+                            directoryList.remove();
+                        }
+                    }
+                }
+            }
+
+            while (directoryList.hasPrevious()) {
+                directoryList.previous();
+            }
+        }
+
+        for (File child : children) {
+            if (directoryList.hasNext()) {
+                moveToTarget(child, directoryList);
+            }
+        }
     }
 }
