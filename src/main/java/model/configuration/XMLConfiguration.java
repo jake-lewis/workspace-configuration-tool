@@ -126,9 +126,26 @@ public class XMLConfiguration implements Configuration {
         Node configNode = document.getElementsByTagName("config").item(0);
         Element configElement = (Element) configNode;
         try {
+            String tempRoot = configElement.getElementsByTagName("root").item(0).getTextContent();
+            String tempTarget = configElement.getElementsByTagName("target").item(0).getTextContent();
+
+            if (tempRoot.equalsIgnoreCase(tempTarget)) {
+                throw new InvalidConfigurationException("The 'Root Path' and 'Target Path' values must refer to different folders");
+            }
+
+            File rootFile = new File(tempRoot);
+            if (!rootFile.isDirectory()) {
+                throw new InvalidConfigurationException("The 'Root Path' must reference a valid directory");
+            }
+
+            File targetFile = new File(tempTarget);
+            if (!targetFile.isDirectory()) {
+                throw new InvalidConfigurationException("The 'Target Path' must reference a valid directory");
+            }
+
             projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
-            projectRootPath = configElement.getElementsByTagName("root").item(0).getTextContent();
-            projectTargetPath = configElement.getElementsByTagName("target").item(0).getTextContent();
+            projectRootPath = tempRoot;
+            projectTargetPath = tempTarget;
         } catch (NullPointerException e) {
             throw new InvalidConfigurationException("The configuration's <config> tag is incomplete");
         }
@@ -156,14 +173,22 @@ public class XMLConfiguration implements Configuration {
         this.projectName = projectName;
     }
 
-    public void setProjectRootPath(String projectRootPath) {
+    public void setProjectRootPath(String projectRootPath) throws InvalidConfigurationException {
+        File file = new File(projectRootPath);
+        if (!file.isDirectory()) {
+            throw new InvalidConfigurationException("The 'Root Path' must reference a valid directory");
+        }
         Node configNode = document.getElementsByTagName("config").item(0);
         Element configElement = (Element) configNode;
         configElement.getElementsByTagName("root").item(0).setTextContent(projectRootPath);
         this.projectRootPath = projectRootPath;
     }
 
-    public void setProjectTargetPath(String projectTargetPath) {
+    public void setProjectTargetPath(String projectTargetPath) throws InvalidConfigurationException {
+        File file = new File(projectTargetPath);
+        if (!file.isDirectory()) {
+            throw new InvalidConfigurationException("The 'Target Path' must reference a valid directory");
+        }
         Node configNode = document.getElementsByTagName("config").item(0);
         Element configElement = (Element) configNode;
         configElement.getElementsByTagName("target").item(0).setTextContent(projectTargetPath);

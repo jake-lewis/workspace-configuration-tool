@@ -166,6 +166,9 @@ public class VisualEditorController implements EditorController {
         //TODO add support for other types of configuration
         XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
         newConfig.setProjectName(projectNameField.getText());
+        if (rootField.getText().equalsIgnoreCase(targetField.getText())) {
+            throw new InvalidConfigurationException("The 'Root Path' and 'Target Path' values must refer to different folders");
+        }
         newConfig.setProjectRootPath(rootField.getText());
         newConfig.setProjectTargetPath(targetField.getText());
         newConfig.updateTextContent();
