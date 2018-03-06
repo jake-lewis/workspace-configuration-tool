@@ -96,15 +96,17 @@ public class ConfigurationFactory {
         List<File> dirs = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles()));
         dirs = new LinkedList<>(dirs);
 
+        Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
+        Pattern namePattern = Pattern.compile("(.*)");
+        Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
+        Pattern enumerationPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])(?:\\w+)(?:-\\d{1,5})? ");
+
         for (File file : dirs) {
 
             if (file.isDirectory()) {
                 Directory dir = new Directory(parent);
                 //set dir properties
-                Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
                 Matcher prefixMatcher = prefixPattern.matcher(file.getName());
-
-                Pattern namePattern = Pattern.compile("(.*)");
                 Matcher nameMatcher = namePattern.matcher(file.getName());
 
                 //if has prefix
@@ -114,12 +116,20 @@ public class ConfigurationFactory {
 
                     if (parent != null) {
                         //Get separator, only uses first child for simplicity
-                        List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles(File::isDirectory)));
-                        if (!children.isEmpty()) {
-                            Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
-                            Matcher separatorMatcher = separatorPattern.matcher(children.get(0).getName());
-                            while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
-                                parent.setSeparator(separatorMatcher.group(1));
+                        List<File> children = Arrays.asList(Objects.requireNonNull(parentFolder.listFiles()));
+                        for (File child : children) {
+                            if (child.isDirectory()) {
+                                Matcher separatorMatcher = separatorPattern.matcher(child.getName());
+                                while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
+                                    parent.setSeparator(separatorMatcher.group(1));
+                                }
+                                break;
+                            } else {
+                                Matcher separatorMatcher = enumerationPattern.matcher(child.getName());
+                                while (separatorMatcher.find()) { //use last found instance of a separator, avoids setting from parent
+                                    parent.setSeparator(separatorMatcher.group(1));
+                                }
+                                break;
                             }
                         }
                     }
