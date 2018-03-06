@@ -129,18 +129,22 @@ public class XMLConfiguration implements Configuration {
             String tempRoot = configElement.getElementsByTagName("root").item(0).getTextContent();
             String tempTarget = configElement.getElementsByTagName("target").item(0).getTextContent();
 
-            if (tempRoot.equalsIgnoreCase(tempTarget)) {
+            if (tempRoot.equalsIgnoreCase(tempTarget) && !tempRoot.equals("")) {
                 throw new InvalidConfigurationException("The 'Root Path' and 'Target Path' values must refer to different folders");
             }
 
-            File rootFile = new File(tempRoot);
-            if (!rootFile.isDirectory()) {
-                throw new InvalidConfigurationException("The 'Root Path' must reference a valid directory");
+            if (!tempRoot.isEmpty()) {
+                File rootFile = new File(tempRoot);
+                if (!rootFile.isDirectory()) {
+                    throw new InvalidConfigurationException("The 'Root Path' must reference a valid directory");
+                }
             }
 
-            File targetFile = new File(tempTarget);
-            if (!targetFile.isDirectory()) {
-                throw new InvalidConfigurationException("The 'Target Path' must reference a valid directory");
+            if (!tempRoot.isEmpty()) {
+                File targetFile = new File(tempTarget);
+                if (!targetFile.isDirectory()) {
+                    throw new InvalidConfigurationException("The 'Target Path' must reference a valid directory");
+                }
             }
 
             projectName = configElement.getElementsByTagName("project").item(0).getTextContent();
