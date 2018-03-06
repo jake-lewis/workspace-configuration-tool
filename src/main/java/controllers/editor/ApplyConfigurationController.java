@@ -186,11 +186,11 @@ public class ApplyConfigurationController implements EditorController {
 
                     Matcher enumPrefixMatcher = enumPrefixPattern.matcher(dirFullPrefix);
                     if (dirFullPrefix.equals(folderFullPrefix)) {
-                        System.out.println("Match found: " + current.getName() + " || Removing...");
+                        System.out.println(targetFolder.getPath() + "\\" + current.getName());
                         directoryList.remove();
                     } else if (enumPrefixMatcher.find()) {
                         if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
-                            System.out.println("Match found: " + current.getName() + " || Removing...");
+                            System.out.println(targetFolder.getPath() + "\\" + current.getName());
                             directoryList.remove();
                         }
                     }
