@@ -12,9 +12,12 @@ import model.configuration.Directory;
 import model.configuration.InvalidConfigurationException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.io.FileUtils.copyFileToDirectory;
 
 public class ApplyConfigurationController implements EditorController {
 
@@ -154,7 +157,10 @@ public class ApplyConfigurationController implements EditorController {
                 for (File child : children) {
                     if (child.isDirectory()) {
                         //use list iterator to allow removal on the fly
-                        moveToTarget(child, (new LinkedList<>(rootDirectories)).listIterator());
+                        ListIterator<Directory> listIterator = (new LinkedList<>(rootDirectories)).listIterator();
+                        moveToTarget(child, listIterator);
+
+                        //TODO in theory anything left in list iterator could not be moved
                     }
                 }
             }
@@ -190,8 +196,13 @@ public class ApplyConfigurationController implements EditorController {
 
                     //If exact prefix (not including possible enumeration) matches
                     if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
-                        System.out.println(targetFolder.getPath() + "\\" + current.getName());
-                        directoryList.remove();
+                        File sourceFile = new File(this.configuration.getProjectRootPath() + "\\" + current.getName());
+                        try {
+                            copyFileToDirectory(sourceFile, targetFolder);
+                            directoryList.remove();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
