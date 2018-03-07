@@ -150,10 +150,11 @@ public class ApplyConfigurationController implements EditorController {
                 //TODO uses currently populated list of directories, maybe should actually parse folder?
                 File targetDirectory = new File(this.configuration.getProjectTargetPath());
                 List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(targetDirectory.listFiles(File::isDirectory))));
+                //Ignores top[ level folder, assumes structure is correct
                 for (File child : children) {
                     if (child.isDirectory()) {
-                        ListIterator<Directory> directoryList = (new LinkedList<>(rootDirectories)).listIterator();
-                        moveToTarget(child, directoryList);
+                        //use list iterator to allow removal on the fly
+                        moveToTarget(child, (new LinkedList<>(rootDirectories)).listIterator());
                     }
                 }
             }
@@ -165,43 +166,43 @@ public class ApplyConfigurationController implements EditorController {
 
         String fullName = targetFolder.getName();
         Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
-        Pattern fullPrefixPattern = Pattern.compile("(.*) (.*)");
-        Pattern enumPrefixPattern = Pattern.compile("(.+?)(?:-\\d{1,5})? ");
+        //Pattern for a file that may be enumerated, e.g. TQ.1.XX File.txt (the XX is sequential numbering)
+        Pattern enumPrefixPattern = Pattern.compile("(.+?)(?:-\\d{1,5})? (.*)");
         Matcher prefixMatcher = prefixPattern.matcher(fullName);
 
+        //If folder has valid prefix pattern
         if (prefixMatcher.find()) {
             String folderName = prefixMatcher.group(2);
             int nameStart = fullName.lastIndexOf(folderName);
             String folderFullPrefix = fullName.substring(0, nameStart - 1);
 
+            //For each file, check if it is meant to be in this folder
             while (directoryList.hasNext()) {
                 Directory current = directoryList.next();
-                Matcher dirPrefixMatcher = fullPrefixPattern.matcher(current.getName());
+                Matcher enumPrefixMatcher = enumPrefixPattern.matcher(current.getName());
 
-                if (dirPrefixMatcher.find()) {
-                    String dirFullPrefix = dirPrefixMatcher.group(1);
+                if (enumPrefixMatcher.find()) {
+                    String dirFullPrefix = enumPrefixMatcher.group(1);
+                    //Not sure how this could happen, but I'm sure there's a good reason for it
                     if (dirFullPrefix.isEmpty()) {
                         break;
                     }
 
-                    Matcher enumPrefixMatcher = enumPrefixPattern.matcher(dirFullPrefix);
-                    if (dirFullPrefix.equals(folderFullPrefix)) {
+                    //If exact prefix (not including possible enumeration) matches
+                    if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
                         System.out.println(targetFolder.getPath() + "\\" + current.getName());
                         directoryList.remove();
-                    } else if (enumPrefixMatcher.find()) {
-                        if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
-                            System.out.println(targetFolder.getPath() + "\\" + current.getName());
-                            directoryList.remove();
-                        }
                     }
                 }
             }
 
+            //Reset iterator
             while (directoryList.hasPrevious()) {
                 directoryList.previous();
             }
         }
 
+        //Recurse through sub-folders
         for (File child : children) {
             if (directoryList.hasNext()) {
                 moveToTarget(child, directoryList);
