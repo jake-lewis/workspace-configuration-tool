@@ -7,7 +7,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import model.ExceptionAlert;
-import model.commands.concrete.ToTargetCommand;
+import model.commands.concrete.ApplyConfigCommand;
+import model.commands.concrete.ApplyToRootCommand;
+import model.commands.concrete.ApplyToTargetCommand;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.configuration.Directory;
@@ -40,7 +42,7 @@ public class ApplyConfigurationController implements EditorController {
 
     public ApplyConfigurationController(Tab applyConfigTab) {
 
-        CommandDelegator.getINSTANCE().subscribe(new ToTargetExecutor(), ToTargetCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new ApplyConfigExecutor(), ApplyConfigCommand.class);
         BorderPane applyConfigPane = (BorderPane) applyConfigTab.getContent();
         GridPane configurationProperties = (GridPane) ((BorderPane) applyConfigPane.getLeft()).getTop();
         SplitPane splitPane = (SplitPane) applyConfigPane.getCenter();
@@ -74,7 +76,7 @@ public class ApplyConfigurationController implements EditorController {
                             if (!rootField.getText().isEmpty() && !targetField.getText().isEmpty()) {
                                 try {
                                     CommandDelegator.getINSTANCE().publish(
-                                            new ToTargetCommand(rootField.getText(), targetField.getText()));
+                                            new ApplyToTargetCommand(rootField.getText(), targetField.getText()));
                                 } catch (Exception e) {
                                     ExceptionAlert alert = new ExceptionAlert(e);
                                     alert.showAndWait();
@@ -155,80 +157,11 @@ public class ApplyConfigurationController implements EditorController {
         return item;
     }
 
-    private class ToTargetExecutor implements Executor<ToTargetCommand> {
+    private class ApplyConfigExecutor implements Executor<ApplyConfigCommand> {
 
         @Override
-        public void execute(ToTargetCommand command) throws Exception {
-            //If there are valid folders
-            if (command.getSourceFolder() != null && command.getTargetFolder() != null) {
-                List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(
-                        command.getTargetFolder().listFiles(File::isDirectory))));
-                //Ignores top level folder, assumes structure is correct
-                for (File child : children) {
-                    if (child.isDirectory()) {
-                        //use list iterator to allow removal on the fly
-                        ListIterator<Directory> listIterator = (new LinkedList<>(ConfigurationFactory
-                                .directoriesFromFolder(command.getSourceFolder(), true))).listIterator();
-                        moveToTarget(command.getSourceFolder(), child, listIterator);
-
-                        //TODO in theory anything left in list iterator could not be moved
-                    }
-                }
-            }
-        }
-
-        private void moveToTarget(File sourceFolder, File targetFolder, ListIterator<Directory> directoryList) {
-            List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(targetFolder.listFiles(File::isDirectory))));
-
-            String fullName = targetFolder.getName();
-            Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
-            //Pattern for a file that may be enumerated, e.g. TQ.1.XX File.txt (the XX is sequential numbering)
-            Pattern enumPrefixPattern = Pattern.compile("(.+?)(?:-\\d{1,5})? (.*)");
-            Matcher prefixMatcher = prefixPattern.matcher(fullName);
-
-            //If folder has valid prefix pattern
-            if (prefixMatcher.find()) {
-                String folderName = prefixMatcher.group(2);
-                int nameStart = fullName.lastIndexOf(folderName);
-                String folderFullPrefix = fullName.substring(0, nameStart - 1);
-
-                //For each file, check if it is meant to be in this folder
-                while (directoryList.hasNext()) {
-                    Directory current = directoryList.next();
-                    Matcher enumPrefixMatcher = enumPrefixPattern.matcher(current.getName());
-
-                    if (enumPrefixMatcher.find()) {
-                        String dirFullPrefix = enumPrefixMatcher.group(1);
-                        //Not sure how this could happen, but I'm sure there's a good reason for it
-                        if (dirFullPrefix.isEmpty()) {
-                            break;
-                        }
-
-                        //If exact prefix (not including possible enumeration) matches
-                        if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
-                            File sourceFile = new File(sourceFolder.getPath() + "\\" + current.getName());
-                            try {
-                                copyFileToDirectory(sourceFile, targetFolder);
-                                directoryList.remove();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-
-                //Reset iterator
-                while (directoryList.hasPrevious()) {
-                    directoryList.previous();
-                }
-            }
-
-            //Recurse through sub-folders
-            for (File child : children) {
-                if (directoryList.hasNext()) {
-                    moveToTarget(sourceFolder, child, directoryList);
-                }
-            }
+        public void execute(ApplyConfigCommand command) throws Exception {
+            command.getApplicator().apply();
         }
     }
 }
