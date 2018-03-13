@@ -1,5 +1,8 @@
 package model.strategies;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import model.configuration.ConfigurationFactory;
 import model.configuration.Directory;
 import model.configuration.InvalidConfigurationException;
@@ -13,6 +16,11 @@ import java.util.regex.Pattern;
 import static org.apache.commons.io.FileUtils.copyFileToDirectory;
 
 public class ApplyToTarget extends ConfigApplicator {
+
+    private boolean overwrite = false;
+    private boolean overwriteSet = false;
+    private boolean isCancel = false;
+
     public ApplyToTarget(String rootPath, String targetPath) {
         super(rootPath, targetPath);
     }
@@ -27,23 +35,28 @@ public class ApplyToTarget extends ConfigApplicator {
                     this.getTargetFolder().listFiles(File::isDirectory))));
             //Ignores top level folder, assumes structure is correct
             for (File child : children) {
-                if (child.isDirectory()) {
+                if (child.isDirectory() && !isCancel) {
                     //use list iterator to allow removal on the fly
                     ListIterator<Directory> listIterator = (new LinkedList<>(ConfigurationFactory
                             .directoriesFromFolder(this.getRootFolder(), true))).listIterator();
-                    moveToTarget(this.getRootFolder(), child, listIterator);
+                    moveToTarget(child, listIterator);
 
                     listIterator.forEachRemaining(remaining::add);
                 }
             }
         }
 
+        overwrite = false;
+        overwriteSet = false;
+        isCancel = false;
         return remaining;
     }
 
-    private void moveToTarget(File sourceFolder, File targetFolder, ListIterator<Directory> directoryList) {
+    private void moveToTarget(File targetFolder, ListIterator<Directory> directoryList) {
         List<File> children = new LinkedList<>(Arrays.asList(Objects.requireNonNull(targetFolder.listFiles(File::isDirectory))));
 
+        boolean overwriteFolder = false;
+        boolean overwriteFolderSet = false;
         String fullName = targetFolder.getName();
         Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
         //Pattern for a file that may be enumerated, e.g. TQ.1.XX File.txt (the XX is sequential numbering)
@@ -70,12 +83,59 @@ public class ApplyToTarget extends ConfigApplicator {
 
                     //If exact prefix (not including possible enumeration) matches
                     if (enumPrefixMatcher.group(1).equals(folderFullPrefix)) {
-                        File sourceFile = new File(sourceFolder.getPath() + "\\" + current.getName());
-                        try {
-                            copyFileToDirectory(sourceFile, targetFolder);
-                            directoryList.remove();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        File sourceFile = new File(this.getRootFolder().getPath() + "\\" + current.getName());
+                        boolean fileExists = new File(targetFolder.getPath() + "\\" + current.getName()).isFile();
+                        boolean copy = false;
+
+                        if (!fileExists || overwrite || overwriteFolder) {
+                            copy = true;
+                        } else if (!overwriteSet && !overwriteFolderSet) {
+                            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                            alert.setTitle("Overwrite Dialog");
+                            alert.setHeaderText("File already exists");
+                            alert.setContentText("Would you like to overwrite '" + targetFolder.getPath() + "\\" + current.getName() + "'?");
+
+                            ButtonType yes = new ButtonType("Yes");
+                            ButtonType no = new ButtonType("No");
+                            ButtonType yesFolder = new ButtonType("Yes to folder");
+                            ButtonType noFolder = new ButtonType("No to folder");
+                            ButtonType yesAll = new ButtonType("Yes to all");
+                            ButtonType noAll = new ButtonType("No to all");
+                            ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+                            alert.getButtonTypes().setAll(yes, no, yesFolder, noFolder, yesAll, noAll, cancel);
+
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.isPresent()) {
+                                ButtonType choice = result.get();
+
+                                if (choice == yes) {
+                                    copy = true;
+                                } else if (choice == no) {
+                                    copy = false;
+                                } else if (choice == yesFolder || choice == noFolder) {
+                                    overwriteFolderSet = true;
+                                    overwriteFolder = (choice == yesFolder);
+                                    copy = overwriteFolder;
+                                } else if (choice == yesAll || choice == noAll) {
+                                    overwriteSet = true;
+                                    overwrite = (choice == yesAll);
+                                    copy = overwrite;
+                                } else if (choice == cancel) {
+                                    isCancel = true;
+                                    break;
+                                }
+                            }
+
+                        }
+
+                        if (copy) {
+                            try {
+                                copyFileToDirectory(sourceFile, targetFolder);
+                                directoryList.remove();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -89,8 +149,8 @@ public class ApplyToTarget extends ConfigApplicator {
 
         //Recurse through sub-folders
         for (File child : children) {
-            if (directoryList.hasNext()) {
-                moveToTarget(sourceFolder, child, directoryList);
+            if (directoryList.hasNext() && !isCancel) {
+                moveToTarget(child, directoryList);
             }
         }
     }

@@ -17,12 +17,8 @@ import model.configuration.InvalidConfigurationException;
 import model.executors.Executor;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static org.apache.commons.io.FileUtils.copyFileToDirectory;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ApplyConfigurationController implements EditorController {
 
@@ -89,6 +85,23 @@ public class ApplyConfigurationController implements EditorController {
                             }
                         });
                         break;
+                    case "targetToRootBtn":
+                        ((Button) node).setOnAction(event -> {
+                            if (!rootField.getText().isEmpty() && !targetField.getText().isEmpty()) {
+                                try {
+                                    CommandDelegator.getINSTANCE().publish(
+                                            new ApplyToRootCommand(rootField.getText(), targetField.getText()));
+                                } catch (Exception e) {
+                                    ExceptionAlert alert = new ExceptionAlert(e);
+                                    alert.showAndWait();
+                                }
+                            } else {
+                                ExceptionAlert alert = new ExceptionAlert(
+                                        new InvalidConfigurationException("A configuration with a valid root and " +
+                                                "target path must be loaded before you can configure a workspace"));
+                                alert.showAndWait();
+                            }
+                        });
                 }
             }
         }
@@ -132,7 +145,8 @@ public class ApplyConfigurationController implements EditorController {
         }
     }
 
-    private List<Directory> populateEditor(File file, TreeView<Directory> treeView) throws InvalidConfigurationException {
+    private List<Directory> populateEditor(File file, TreeView<Directory> treeView) throws
+            InvalidConfigurationException {
         List<Directory> directories = ConfigurationFactory.directoriesFromFolder(
                 file, true);
 
@@ -161,7 +175,8 @@ public class ApplyConfigurationController implements EditorController {
 
         @Override
         public void execute(ApplyConfigCommand command) throws Exception {
-            command.getApplicator().apply();
+            List<Directory> remaining = command.getApplicator().apply();
+            //remaining.forEach(directory -> System.out.println(directory.toString()));
         }
     }
 }
