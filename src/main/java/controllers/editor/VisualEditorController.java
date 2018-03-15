@@ -82,6 +82,12 @@ public class VisualEditorController implements EditorController {
                             }
                         });
                         break;
+                    case "resetConfigBtn":
+                        ((Button) node).setOnAction(event -> {
+                            projectNameField.setText(this.configuration.getProjectName());
+                            rootField.setText(this.configuration.getProjectRootPath());
+                            targetField.setText(this.configuration.getProjectTargetPath());
+                        });
                 }
             }
         }
