@@ -3,11 +3,18 @@ package controllers.editor;
 import controllers.CommandDelegator;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.util.Callback;
 import model.ExceptionAlert;
+import model.HierarchyTreeCell;
 import model.commands.concrete.ExpandTreeDirCommand;
 import model.commands.concrete.SelectTreeDirCommand;
 import model.commands.concrete.UpdateConfigCommand;
@@ -38,6 +45,10 @@ public class VisualEditorController implements EditorController {
         BorderPane visualPane = (BorderPane) visualEditorTab.getContent();
 
         this.visualEditor = (TreeView<Directory>) visualPane.getCenter();
+
+        //Drag and drop behaviour
+        visualEditor.setCellFactory(directoryTreeView -> new HierarchyTreeCell());
+
         GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
         GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
 
