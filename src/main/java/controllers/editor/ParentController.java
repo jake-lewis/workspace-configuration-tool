@@ -157,24 +157,35 @@ public class ParentController implements EditorController {
 
         @Override
         public void unexecute(ExpandAllTreeCommand command) throws Exception {
+            isExecuting = true;
             TreeItem prevRoot = command.getPrevTreeView().getRoot();
             TreeItem newRoot = command.getNewTreeView().getRoot();
 
             if (prevRoot != null && newRoot != null) {
                 applyExpansion(prevRoot, newRoot);
             }
+            isExecuting = false;
         }
+
+//        @Override
+//        public void reexecute(ExpandAllTreeCommand command) throws Exception {
+//            isExecuting = true;
+//
+//
+//
+//            isExecuting = false;
+//        }
 
         @Override
         public void execute(ExpandAllTreeCommand command) throws Exception {
+            isExecuting = true;
             TreeView<?> treeView = command.getPrevTreeView();
             command.setPrevTreeView(copyTreeView(command.getPrevTreeView()));
             if (treeView.getRoot() != null) {
-                isExecuting = true;
                 expandTreeItem(treeView.getRoot());
-                isExecuting = false;
                 command.setNewTreeView(treeView);
             }
+            isExecuting = false;
         }
     }
 
@@ -182,24 +193,37 @@ public class ParentController implements EditorController {
 
         @Override
         public void unexecute(CollapseAllTreeCommand command) throws Exception {
+            isExecuting = true;
             TreeItem prevRoot = command.getPrevTreeView().getRoot();
             TreeItem newRoot = command.getNewTreeView().getRoot();
 
             if (prevRoot != null && newRoot != null) {
                 applyExpansion(prevRoot, newRoot);
             }
+            isExecuting = false;
         }
+
+//        @Override
+//        public void reexecute(CollapseAllTreeCommand command) throws Exception {
+//            isExecuting = true;
+//            TreeView<?> treeView = command.getNewTreeView();
+//            if (treeView.getRoot() != null) {
+//                collapseTreeItem(treeView.getRoot());
+//            }
+//
+//            isExecuting = false;
+//        }
 
         @Override
         public void execute(CollapseAllTreeCommand command) throws Exception {
+            isExecuting = true;
             TreeView<?> treeView = command.getPrevTreeView();
             command.setPrevTreeView(copyTreeView(command.getPrevTreeView()));
             if (treeView.getRoot() != null) {
-                isExecuting = true;
                 collapseTreeItem(treeView.getRoot());
-                isExecuting = false;
                 command.setNewTreeView(treeView);
             }
+            isExecuting = false;
         }
     }
 
