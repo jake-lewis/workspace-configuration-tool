@@ -1,24 +1,18 @@
 package controllers.editor;
 
 import controllers.CommandDelegator;
-import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
 import model.ExceptionAlert;
 import model.HierarchyTreeCell;
-import model.commands.concrete.ExpandTreeDirCommand;
-import model.commands.concrete.SelectTreeDirCommand;
-import model.commands.concrete.UpdateConfigCommand;
-import model.configuration.*;
+import model.commands.concrete.*;
+import model.configuration.Configuration;
+import model.configuration.Directory;
+import model.configuration.InvalidConfigurationException;
+import model.configuration.XMLConfiguration;
 import model.executors.UndoableExecutor;
 
 import java.util.LinkedList;
@@ -27,7 +21,7 @@ import java.util.List;
 public class VisualEditorController implements EditorController {
 
     //DEBUG switch?
-    private boolean undoableUI = true;
+    private boolean undoableUI = false;
 
     private TreeView<Directory> visualEditor;
     private TextField projectNameField;
@@ -51,9 +45,9 @@ public class VisualEditorController implements EditorController {
 
         GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
         GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
+        GridPane treeControls = (GridPane) ((BorderPane) visualPane.getRight()).getBottom();
 
         CommandDelegator.getINSTANCE().subscribe(new SelectionExecutor(), SelectTreeDirCommand.class);
-        CommandDelegator.getINSTANCE().subscribe(new ExpansionExecutor(), ExpandTreeDirCommand.class);
 
         this.visualEditor.getSelectionModel().selectedItemProperty()
                 .addListener((observable, old_val, new_val) -> {
@@ -63,7 +57,7 @@ public class VisualEditorController implements EditorController {
                                 int prev = visualEditor.getRow(old_val);
                                 int next = visualEditor.getRow(new_val);
                                 CommandDelegator.getINSTANCE().publish(
-                                        new SelectTreeDirCommand(prev, next, new_val.getValue().toString()), undoableUI);
+                                        new SelectTreeDirCommand(prev, next, new_val.getValue().toString()));
                             }
                         }
                     } catch (Exception e) { //TODO handle exception better?
@@ -84,7 +78,7 @@ public class VisualEditorController implements EditorController {
                     case "targetField":
                         targetField = (TextField) node;
                         break;
-                    case "applyConfigBtn" :
+                    case "applyConfigBtn":
                         ((Button) node).setOnAction(event -> {
                             try {
                                 applyConfigChange();
@@ -116,10 +110,38 @@ public class VisualEditorController implements EditorController {
                     case "separatorField":
                         separatorField = (TextField) node;
                         break;
-                    case "applyDirBtn" :
+                    case "applyDirBtn":
                         ((Button) node).setOnAction(event -> {
                             try {
                                 applyDirectoryChange();
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
+                }
+            }
+        }
+
+        gridPaneChildren = treeControls.getChildren();
+        for (Node node : gridPaneChildren) {
+            if (node.getId() != null) {
+                switch (node.getId()) {
+                    case "expandAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new ExpandAllTreeCommand(visualEditor, "Config Editor Tree"));
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
+                    case "collapseAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new CollapseAllTreeCommand(visualEditor, "Config Editor Tree"));
                             } catch (Exception e) {
                                 new ExceptionAlert(e).showAndWait();
                             }
@@ -149,6 +171,12 @@ public class VisualEditorController implements EditorController {
 
             visualEditor.setRoot(treeRoot);
             visualEditor.setShowRoot(false);
+            try {
+                CommandDelegator.getINSTANCE().publish(
+                        new ExpandAllTreeCommand(visualEditor, "Config Editor Tree"), false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             projectNameField.setText(null);
             rootField.setText(null);
@@ -167,10 +195,10 @@ public class VisualEditorController implements EditorController {
         }
 
         item.expandedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!isExecuting) {
+            if (!ParentController.getInstance().isExecuting()) {
                 try {
                     CommandDelegator.getINSTANCE().publish(
-                            new ExpandTreeDirCommand(visualEditor.getRow(item), item.getValue().toString()), undoableUI);
+                            new ToggleExpandTreeItemCommand(visualEditor, visualEditor.getRow(item), item.getValue().toString()), undoableUI);
                 } catch (Exception e) { //TODO handle exception better?
                     e.printStackTrace();
                 }
@@ -227,6 +255,10 @@ public class VisualEditorController implements EditorController {
         CommandDelegator.getINSTANCE().publish(new UpdateConfigCommand(newConfiguration, configuration));
     }
 
+    public TreeView<Directory> getVisualEditor() {
+        return visualEditor;
+    }
+
     private class SelectionExecutor implements UndoableExecutor<SelectTreeDirCommand> {
 
         private SelectionModel<TreeItem<Directory>> model;
@@ -266,28 +298,6 @@ public class VisualEditorController implements EditorController {
             nodeNameField.setText(nextSelectedItem.getName());
             prefixField.setText(nextSelectedItem.getDirectPrefix());
             separatorField.setText(nextSelectedItem.getSeparator());
-        }
-    }
-
-    private class ExpansionExecutor implements UndoableExecutor<ExpandTreeDirCommand> {
-
-        @Override
-        public void unexecute(ExpandTreeDirCommand command) throws Exception {
-            isExecuting = true;
-            TreeItem<Directory> item = visualEditor.getTreeItem(command.getIndex());
-            BooleanProperty expanded = item.expandedProperty();
-            expanded.set(!expanded.get());
-            isExecuting = false;
-        }
-
-        @Override
-        public void reexecute(ExpandTreeDirCommand command) throws Exception {
-            unexecute(command);
-        }
-
-        @Override
-        public void execute(ExpandTreeDirCommand command) throws Exception {
-            //NOOP
         }
     }
 }

@@ -8,12 +8,9 @@ import java.util.List;
 
 public abstract class ConfigApplicator {
 
-    private String rootPath, targetPath;
     private File rootFolder, targetFolder;
 
     public ConfigApplicator(String rootPath, String targetPath) {
-        this.rootPath = rootPath;
-        this.targetPath = targetPath;
         this.rootFolder = new File(rootPath);
         this.targetFolder = new File(targetPath);
     }
