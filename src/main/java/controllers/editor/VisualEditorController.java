@@ -45,7 +45,7 @@ public class VisualEditorController implements EditorController {
 
         GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
         GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
-        GridPane treeControls = (GridPane) ((BorderPane) visualPane.getRight()).getBottom();
+        GridPane treeControls = (GridPane) ((BorderPane) visualPane.getLeft()).getBottom();
 
         CommandDelegator.getINSTANCE().subscribe(new SelectionExecutor(), SelectTreeDirCommand.class);
 
