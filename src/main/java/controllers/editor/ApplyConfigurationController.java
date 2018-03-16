@@ -7,9 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import model.ExceptionAlert;
-import model.commands.concrete.ApplyConfigCommand;
-import model.commands.concrete.ApplyToRootCommand;
-import model.commands.concrete.ApplyToTargetCommand;
+import model.commands.concrete.*;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.configuration.Directory;
@@ -41,6 +39,7 @@ public class ApplyConfigurationController implements EditorController {
         CommandDelegator.getINSTANCE().subscribe(new ApplyConfigExecutor(), ApplyConfigCommand.class);
         BorderPane applyConfigPane = (BorderPane) applyConfigTab.getContent();
         GridPane configurationProperties = (GridPane) ((BorderPane) applyConfigPane.getLeft()).getTop();
+        GridPane treeControls = (GridPane) ((BorderPane) applyConfigPane.getLeft()).getBottom();
         SplitPane splitPane = (SplitPane) applyConfigPane.getCenter();
         ObservableList<Node> splitPaneChildren = splitPane.getItems();
         for (Node node : splitPaneChildren) {
@@ -105,6 +104,34 @@ public class ApplyConfigurationController implements EditorController {
                 }
             }
         }
+
+        gridPaneChildren = treeControls.getChildren();
+        for (Node node : gridPaneChildren) {
+            if (node.getId() != null) {
+                switch (node.getId()) {
+                    case "expandAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new ExpandAllTreeCommand(targetVisualEditor, "Workspace Target Tree"));
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
+                    case "collapseAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new CollapseAllTreeCommand(targetVisualEditor, "Workspace Target Tree"));
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
+                }
+            }
+        }
     }
 
     @Override
@@ -153,7 +180,7 @@ public class ApplyConfigurationController implements EditorController {
         TreeItem<Directory> treeRoot = new TreeItem<>();
         if (directories != null) {
             for (Directory rootDir : directories) {
-                treeRoot.getChildren().add(createTreeItem(rootDir));
+                treeRoot.getChildren().add(createTreeItem(rootDir, treeView));
             }
         }
 
@@ -162,12 +189,23 @@ public class ApplyConfigurationController implements EditorController {
         return directories;
     }
 
-    private TreeItem createTreeItem(Directory dir) {
+    private TreeItem createTreeItem(Directory dir, TreeView treeView) {
         TreeItem<Directory> item = new TreeItem<>(dir);
         List<Directory> children = dir.getChildren();
         for (Directory child : children) {
-            item.getChildren().add(createTreeItem(child));
+            item.getChildren().add(createTreeItem(child, treeView));
         }
+
+        item.expandedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!ParentController.getInstance().isExecuting()) {
+                try {
+                    CommandDelegator.getINSTANCE().publish(
+                            new ToggleExpandTreeItemCommand(treeView, treeView.getRow(item), item.getValue().toString()), undoableUI);
+                } catch (Exception e) { //TODO handle exception better?
+                    e.printStackTrace();
+                }
+            }
+        });
         return item;
     }
 

@@ -47,7 +47,12 @@ public abstract class TreeViewExpansionStrategy {
 
     private void setTreeItemExpansion(TreeItem<?> item, boolean expanded) {
         if (item != null && !item.isLeaf()) {
-            item.setExpanded(expanded);
+
+            //Don't collapse/expand root
+            if (item.getParent() != null) {
+                item.setExpanded(expanded);
+            }
+
             for (TreeItem<?> child : item.getChildren()) {
                 setTreeItemExpansion(child, expanded);
             }
