@@ -1,6 +1,8 @@
 package controllers.editor;
 
 import controllers.CommandDelegator;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -18,7 +20,7 @@ import model.executors.UndoableExecutor;
 import java.util.LinkedList;
 import java.util.List;
 
-public class VisualEditorController implements EditorController {
+public class VisualEditorController implements EditorController, InvalidationListener {
 
     //DEBUG switch?
     private boolean undoableUI = true;
@@ -41,7 +43,11 @@ public class VisualEditorController implements EditorController {
         this.visualEditor = (TreeView<Directory>) visualPane.getCenter();
 
         //Drag and drop behaviour
-        visualEditor.setCellFactory(directoryTreeView -> new HierarchyTreeCell());
+        visualEditor.setCellFactory(directoryTreeView -> {
+            HierarchyTreeCell cell = new HierarchyTreeCell();
+            cell.addListener(this);
+            return cell;
+        });
 
         GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
         GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
@@ -253,6 +259,17 @@ public class VisualEditorController implements EditorController {
 
     private void apply(Configuration newConfiguration) throws Exception {
         CommandDelegator.getINSTANCE().publish(new UpdateConfigCommand(newConfiguration, configuration));
+    }
+
+    @Override
+    public void invalidated(Observable observable) {
+        if (observable instanceof HierarchyTreeCell) {
+            try {
+                applyDirectoryChange();
+            } catch (Exception e) {
+                e.printStackTrace(); //todo
+            }
+        }
     }
 
     private class SelectionExecutor implements UndoableExecutor<SelectTreeDirCommand> {

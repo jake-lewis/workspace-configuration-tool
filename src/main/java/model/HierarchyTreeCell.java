@@ -1,5 +1,7 @@
 package model;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.geometry.Point2D;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -10,13 +12,16 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import model.configuration.Directory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 
 /**
  * TreeCell implementation that has predefined drag and drop functionality support <br>
  * <br>
  * Adapted from example at https://gist.github.com/andytill/4009620 <br>
  */
-public class HierarchyTreeCell extends TreeCell<Directory> {
+public class HierarchyTreeCell extends TreeCell<Directory> implements Observable {
 
     private enum WorkDropType {DROP_INTO, REORDER}
 
@@ -27,11 +32,13 @@ public class HierarchyTreeCell extends TreeCell<Directory> {
 
     private static WorkDropType workDropType;
 
+    private List<InvalidationListener> listeners = new LinkedList<>();
+
     public HierarchyTreeCell() {
         getStyleClass().add("tree-cell");
 
         setOnDragOver(event -> {
-            if (isNotAlreadyChildOfTarget(HierarchyTreeCell.this.getTreeItem()) && draggedTreeItem.getParent() != getTreeItem()) {
+            if (isDraggableToParent() && isNotAlreadyChildOfTarget(HierarchyTreeCell.this.getTreeItem()) && draggedTreeItem.getParent() != getTreeItem()) {
                 Point2D sceneCoordinates = HierarchyTreeCell.this.localToScene(0d, 0d);
 
                 double height = HierarchyTreeCell.this.getHeight();
@@ -93,11 +100,13 @@ public class HierarchyTreeCell extends TreeCell<Directory> {
                 Directory draggedWork = draggedTreeItem.getValue();
 
                 if (workDropType == WorkDropType.DROP_INTO) {
-                    if (isNotAlreadyChildOfTarget(HierarchyTreeCell.this.getTreeItem()) && draggedTreeItem.getParent() != getTreeItem()) {
+                    if (isDraggableToParent() && isNotAlreadyChildOfTarget(HierarchyTreeCell.this.getTreeItem()) && draggedTreeItem.getParent() != getTreeItem()) {
 
                         //todo replace with command
                         draggedItemParent.getValue().getChildren().remove(draggedWork);
                         getTreeItem().getValue().getChildren().add(draggedWork);
+
+                        notifyListeners();
 
                         getTreeItem().setExpanded(true);
                     }
@@ -122,6 +131,12 @@ public class HierarchyTreeCell extends TreeCell<Directory> {
         });
     }
 
+    private boolean isDraggableToParent() {
+        //todo
+        //return draggedTreeItem.getValue().isDraggableTo(getTreeItem().getValue());
+        return true;
+    }
+
     private boolean isNotAlreadyChildOfTarget(TreeItem<Directory> treeItemParent) {
         return draggedTreeItem != treeItemParent &&
                 (treeItemParent.getParent() == null || isNotAlreadyChildOfTarget(treeItemParent.getParent()));
@@ -136,6 +151,22 @@ public class HierarchyTreeCell extends TreeCell<Directory> {
         } else {
             setText(null);
             setGraphic(null);
+        }
+    }
+
+    @Override
+    public void addListener(InvalidationListener listener) {
+        this.listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(InvalidationListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        for (InvalidationListener listener : listeners) {
+            listener.invalidated(this);
         }
     }
 }
