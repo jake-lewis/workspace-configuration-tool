@@ -95,7 +95,10 @@ class FileMenuController {
         try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open existing configuration file");
-            fileChooser.setInitialDirectory(new File("C:\\Git Repositories\\project\\src\\main\\resources\\example config"));
+            File init = new File("C:\\Git Repositories\\project\\src\\main\\resources\\example config");
+            if (init.isDirectory()) {
+                fileChooser.setInitialDirectory(init);
+            }
 
             populateExtensions(fileChooser);
 
