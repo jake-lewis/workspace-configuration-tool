@@ -21,7 +21,7 @@ import java.util.List;
 public class VisualEditorController implements EditorController {
 
     //DEBUG switch?
-    private boolean undoableUI = false;
+    private boolean undoableUI = true;
 
     private TreeView<Directory> visualEditor;
     private TextField projectNameField;
@@ -253,10 +253,6 @@ public class VisualEditorController implements EditorController {
 
     private void apply(Configuration newConfiguration) throws Exception {
         CommandDelegator.getINSTANCE().publish(new UpdateConfigCommand(newConfiguration, configuration));
-    }
-
-    public TreeView<Directory> getVisualEditor() {
-        return visualEditor;
     }
 
     private class SelectionExecutor implements UndoableExecutor<SelectTreeDirCommand> {

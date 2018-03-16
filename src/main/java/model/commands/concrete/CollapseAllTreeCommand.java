@@ -1,36 +1,16 @@
 package model.commands.concrete;
 
 import javafx.scene.control.TreeView;
-import model.commands.UndoableCommand;
+import model.strategies.CollapseTreeViewStrategy;
 
-public class CollapseAllTreeCommand implements UndoableCommand {
-    private TreeView prevTreeView;
-    private TreeView newTreeView;
-    private final String treeName;
+public class CollapseAllTreeCommand extends ToggleTreeExpansionCommand {
 
     public CollapseAllTreeCommand(TreeView treeView, String treeName) {
-        this.prevTreeView = treeView;
-        this.treeName = treeName;
-    }
-
-    public TreeView getPrevTreeView() {
-        return prevTreeView;
-    }
-
-    public TreeView getNewTreeView() {
-        return newTreeView;
-    }
-
-    public void setNewTreeView(TreeView newTreeView) {
-        this.newTreeView = newTreeView;
+        super(new CollapseTreeViewStrategy(treeView, treeName));
     }
 
     @Override
     public String getName() {
-        return "Collapse all items in " + treeName;
-    }
-
-    public void setPrevTreeView(TreeView prevTreeView) {
-        this.prevTreeView = prevTreeView;
+        return "Collapse all items in " + getStrategy().getTreeName();
     }
 }

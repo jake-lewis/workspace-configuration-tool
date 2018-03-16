@@ -13,12 +13,12 @@ import java.util.*;
 
 import static org.apache.commons.io.FileUtils.copyFileToDirectory;
 
-public class ApplyToRoot extends ConfigApplicator {
+public class ApplyToRootStrategy extends ConfigApplicator {
 
     private boolean overwrite, overwriteSet, isCancel = false;
     private List<Directory> remaining;
 
-    public ApplyToRoot(String sourcePath, String targetPath) {
+    public ApplyToRootStrategy(String sourcePath, String targetPath) {
         super(sourcePath, targetPath);
     }
 
