@@ -1,4 +1,4 @@
-package model.strategies;
+package model.strategies.applyconfig;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;

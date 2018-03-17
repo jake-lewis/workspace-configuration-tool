@@ -1,4 +1,4 @@
-package model.strategies;
+package model.strategies.applyconfig;
 
 import model.configuration.Directory;
 import model.configuration.InvalidConfigurationException;

@@ -1,4 +1,4 @@
-package model.strategies;
+package model.strategies.treeexpansion;
 
 import javafx.scene.control.TreeView;
 
