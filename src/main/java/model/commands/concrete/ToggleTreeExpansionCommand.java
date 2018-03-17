@@ -1,7 +1,7 @@
 package model.commands.concrete;
 
 import model.commands.UndoableCommand;
-import model.strategies.TreeViewExpansionStrategy;
+import model.strategies.treeexpansion.TreeViewExpansionStrategy;
 
 public abstract class ToggleTreeExpansionCommand implements UndoableCommand {
     private TreeViewExpansionStrategy strategy;

@@ -1,6 +1,6 @@
 package model.commands.concrete;
 
-import model.strategies.ApplyToRootStrategy;
+import model.strategies.applyconfig.ApplyToRootStrategy;
 
 public class ApplyToRootCommand extends ApplyConfigCommand {
 

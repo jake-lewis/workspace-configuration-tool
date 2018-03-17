@@ -1,7 +1,7 @@
 package model.commands.concrete;
 
 import javafx.scene.control.TreeView;
-import model.strategies.CollapseTreeViewStrategy;
+import model.strategies.treeexpansion.CollapseTreeViewStrategy;
 
 public class CollapseAllTreeCommand extends ToggleTreeExpansionCommand {
 
