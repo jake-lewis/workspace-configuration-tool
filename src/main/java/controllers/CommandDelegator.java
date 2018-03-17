@@ -24,6 +24,8 @@ public class CommandDelegator implements Observable {
 
     private List<InvalidationListener> listeners = new LinkedList<>();
 
+    private String lastCommandStatus;
+
     public <C extends Command> boolean subscribe(Executor<C> executor, Class <C> clazz) {
 
         //TODO multiple classes? e.g. Class <C>... clazz
@@ -97,6 +99,7 @@ public class CommandDelegator implements Observable {
             executor.execute(command);
             if (record) {
                 commands.add(command);
+                lastCommandStatus = "Do " + command.getName();
                 notifyListeners();
                 System.out.println("Do " + command.getName()); //TODO issue #23
             }
@@ -125,6 +128,7 @@ public class CommandDelegator implements Observable {
                         //doing this because can't determine type until runtime, will be correct
                         //noinspection unchecked
                         undoableExecutor.unexecute((UndoableCommand) command);
+                        lastCommandStatus = "Undo " + command.getName();
                         notifyListeners();
                         System.out.println("Undo " + command.getName());
                         return true;
@@ -160,6 +164,7 @@ public class CommandDelegator implements Observable {
                         //doing this because can't determine type until runtime, will be correct
                         //noinspection unchecked
                         undoableExecutor.reexecute((UndoableCommand) command);
+                        lastCommandStatus = "Redo " + command.getName();
                         notifyListeners();
                         System.out.println("Redo " + command.getName());
                         return true;
@@ -211,6 +216,10 @@ public class CommandDelegator implements Observable {
         }
 
         return null;
+    }
+
+    public String getLastCommandStatus() {
+        return lastCommandStatus;
     }
 
     @Override

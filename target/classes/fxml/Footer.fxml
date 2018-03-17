@@ -2,9 +2,19 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.HBox?>
 
-<ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
-   <items>
-      <Label text="Version 0.5" />
-   </items>
-</ToolBar>
+<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:id="footerContainer" fx:controller="controllers.menus.FooterController">
+   <children>
+      <ToolBar  fx:id="leftBar" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" HBox.hgrow="SOMETIMES">
+         <items>
+            <Label fx:id="statusLabel" />
+         </items>
+      </ToolBar>
+      <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" HBox.hgrow="SOMETIMES">
+        <items>
+            <Label text="Version 0.5" />
+        </items>
+      </ToolBar>
+   </children>
+</HBox>
