@@ -1,8 +1,6 @@
 package controllers.editor;
 
 import controllers.CommandDelegator;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -17,10 +15,11 @@ import model.configuration.InvalidConfigurationException;
 import model.configuration.XMLConfiguration;
 import model.executors.UndoableExecutor;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-public class VisualEditorController implements EditorController, InvalidationListener {
+public class VisualEditorController implements EditorController {
 
     //DEBUG switch?
     private boolean undoableUI = true;
@@ -43,11 +42,7 @@ public class VisualEditorController implements EditorController, InvalidationLis
         this.visualEditor = (TreeView<Directory>) visualPane.getCenter();
 
         //Drag and drop behaviour
-        visualEditor.setCellFactory(directoryTreeView -> {
-            HierarchyTreeCell cell = new HierarchyTreeCell();
-            cell.addListener(this);
-            return cell;
-        });
+        visualEditor.setCellFactory(directoryTreeView -> new HierarchyTreeCell());
 
         GridPane projectProperties = (GridPane) ((BorderPane) visualPane.getLeft()).getTop();
         GridPane nodeProperties = (GridPane) ((BorderPane) visualPane.getRight()).getTop();
@@ -58,7 +53,7 @@ public class VisualEditorController implements EditorController, InvalidationLis
         this.visualEditor.getSelectionModel().selectedItemProperty()
                 .addListener((observable, old_val, new_val) -> {
                     try {
-                        if (null != new_val) {
+                        if (null != new_val && new_val.getParent() != null) {
                             if (!isExecuting) {
                                 int prev = visualEditor.getRow(old_val);
                                 int next = visualEditor.getRow(new_val);
@@ -87,7 +82,7 @@ public class VisualEditorController implements EditorController, InvalidationLis
                     case "applyConfigBtn":
                         ((Button) node).setOnAction(event -> {
                             try {
-                                applyConfigChange();
+                                applyConfigPropertiesChange();
                             } catch (Exception e) {
                                 new ExceptionAlert(e).showAndWait();
                             }
@@ -168,8 +163,15 @@ public class VisualEditorController implements EditorController, InvalidationLis
             targetField.setText(configuration.getProjectTargetPath());
 
             List<Directory> directories = configuration.getDirectories();
-            TreeItem<Directory> treeRoot = new TreeItem<>();
+
+            String rootName = "Folder Root";
+            String targetFolderName = new File(configuration.getProjectTargetPath()).getName();
+            rootName = targetFolderName.isEmpty() ? rootName : rootName + ": " + targetFolderName;
+
+            TreeItem<Directory> treeRoot = new TreeItem<>(new Directory(rootName, null, null, null));
+
             if (directories != null) {
+                treeRoot.getValue().setChildren(directories);
                 for (Directory rootDir : directories) {
                     treeRoot.getChildren().add(createTreeItem(rootDir));
                 }
@@ -213,7 +215,7 @@ public class VisualEditorController implements EditorController, InvalidationLis
         return item;
     }
 
-    private void applyConfigChange() throws InvalidConfigurationException, Exception {
+    private void applyConfigPropertiesChange() throws InvalidConfigurationException, Exception {
         //TODO add support for other types of configuration
         XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
         newConfig.setProjectName(projectNameField.getText());
@@ -259,17 +261,6 @@ public class VisualEditorController implements EditorController, InvalidationLis
 
     private void apply(Configuration newConfiguration) throws Exception {
         CommandDelegator.getINSTANCE().publish(new UpdateConfigCommand(newConfiguration, configuration));
-    }
-
-    @Override
-    public void invalidated(Observable observable) {
-        if (observable instanceof HierarchyTreeCell) {
-            try {
-                applyDirectoryChange();
-            } catch (Exception e) {
-                e.printStackTrace(); //todo
-            }
-        }
     }
 
     private class SelectionExecutor implements UndoableExecutor<SelectTreeDirCommand> {

@@ -1,19 +1,23 @@
 package model;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
+import controllers.CommandDelegator;
+import controllers.editor.ParentController;
+import javafx.event.Event;
+import javafx.event.EventDispatchChain;
+import javafx.event.EventDispatcher;
 import javafx.geometry.Point2D;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.effect.InnerShadow;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.paint.Color;
+import model.commands.concrete.DnDCommand;
+import model.configuration.Configuration;
 import model.configuration.Directory;
+import model.configuration.InvalidConfigurationException;
+import model.configuration.XMLConfiguration;
 
-import java.util.LinkedList;
-import java.util.List;
+import javax.xml.transform.TransformerException;
 
 
 /**
@@ -21,7 +25,7 @@ import java.util.List;
  * <br>
  * Adapted from example at https://gist.github.com/andytill/4009620 <br>
  */
-public class HierarchyTreeCell extends TreeCell<Directory> implements Observable {
+public class HierarchyTreeCell extends TreeCell<Directory> {
 
     private enum WorkDropType {DROP_INTO, REORDER}
 
@@ -31,8 +35,6 @@ public class HierarchyTreeCell extends TreeCell<Directory> implements Observable
     private static TreeItem<Directory> draggedTreeItem;
 
     private static WorkDropType workDropType;
-
-    private List<InvalidationListener> listeners = new LinkedList<>();
 
     public HierarchyTreeCell() {
         getStyleClass().add("tree-cell");
@@ -95,20 +97,37 @@ public class HierarchyTreeCell extends TreeCell<Directory> implements Observable
 
             if (draggedTreeItem != null) {
 
-                TreeItem<Directory> draggedItemParent = draggedTreeItem.getParent();
-
-                Directory draggedWork = draggedTreeItem.getValue();
-
                 if (workDropType == WorkDropType.DROP_INTO) {
                     if (isDraggableToParent() && isNotAlreadyChildOfTarget(HierarchyTreeCell.this.getTreeItem()) && draggedTreeItem.getParent() != getTreeItem()) {
+                        Configuration currentConfig = ParentController.getInstance().getConfiguration();
 
-                        //todo replace with command
-                        draggedItemParent.getValue().getChildren().remove(draggedWork);
-                        getTreeItem().getValue().getChildren().add(draggedWork);
+                        //TODO update for general config
+                        if (currentConfig instanceof XMLConfiguration) {
 
-                        notifyListeners();
+                            XMLConfiguration config = (XMLConfiguration) currentConfig;
 
-                        getTreeItem().setExpanded(true);
+                            try {
+                                XMLConfiguration prevConfig = XMLConfiguration.copy(config);
+                                XMLConfiguration newConfig = XMLConfiguration.copy(config);
+
+                                TreeItem<Directory> draggedItemParent = draggedTreeItem.getParent();
+                                Directory draggedWork = draggedTreeItem.getValue();
+
+                                draggedItemParent.getValue().getChildren().remove(draggedWork);
+                                getTreeItem().getValue().getChildren().add(draggedWork);
+
+                                newConfig.setDirectories(getTreeView().getRoot().getValue().getChildren());
+
+                                CommandDelegator.getINSTANCE().publish(new DnDCommand(newConfig, prevConfig, draggedWork.getFullPrefix() + " " + draggedWork.getName()));
+
+                            } catch (InvalidConfigurationException e) { //TODO improve
+                                e.printStackTrace();
+                            } catch (TransformerException e) {
+                                e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 } else if (workDropType == WorkDropType.REORDER) {
                     //todo
@@ -154,19 +173,39 @@ public class HierarchyTreeCell extends TreeCell<Directory> implements Observable
         }
     }
 
-    @Override
-    public void addListener(InvalidationListener listener) {
-        this.listeners.add(listener);
-    }
+    /**
+     * Event dispatcher that disables double click expansion behaviour by consuming the event
+     *
+     * @see javafx.event.EventDispatcher
+     */
+    private class DisableExpansionEventDispatcher implements EventDispatcher {
+        private final EventDispatcher originalDispatcher;
 
-    @Override
-    public void removeListener(InvalidationListener listener) {
-        this.listeners.remove(listener);
-    }
+        /**
+         * @param originalDispatcher Used to pass on any event that isn't a double click
+         * @see DisableExpansionEventDispatcher
+         */
+        public DisableExpansionEventDispatcher(EventDispatcher originalDispatcher) {
+            this.originalDispatcher = originalDispatcher;
+        }
 
-    private void notifyListeners() {
-        for (InvalidationListener listener : listeners) {
-            listener.invalidated(this);
+        /**
+         * If the event is a double click, it will be consumed,
+         * otherwise passes on event to original dispatcher
+         *
+         * @param event the event do dispatch
+         * @param tail  the rest of the chain to dispatch event to
+         * @return the return event or null if the event has been handled / consumed
+         */
+        @Override
+        public Event dispatchEvent(Event event, EventDispatchChain tail) {
+            if (event instanceof MouseEvent) {
+                if (((MouseEvent) event).getButton() == MouseButton.PRIMARY
+                        && ((MouseEvent) event).getClickCount() >= 2) {
+                    event.consume();
+                }
+            }
+            return originalDispatcher.dispatchEvent(event, tail);
         }
     }
 }

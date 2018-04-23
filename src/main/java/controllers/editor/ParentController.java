@@ -28,11 +28,16 @@ public class ParentController implements EditorController {
         CommandDelegator.getINSTANCE().subscribe(new TreeViewExpansionExecutor(), ToggleTreeExpansionCommand.class);
         CommandDelegator.getINSTANCE().subscribe(new SaveExecutor(), SaveConfigCommand.class);
         CommandDelegator.getINSTANCE().subscribe(new CloseExecutor(), CloseConfigCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new DnDExecutor(), DnDCommand.class);
         configuration = ConfigurationFactory.getNullConfig();
     }
 
     public static ParentController getInstance() {
         return INSTANCE;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public void register(EditorController controller) {
@@ -164,6 +169,21 @@ public class ParentController implements EditorController {
         public void execute(CloseConfigCommand command) throws Exception {
             command.setConfiguration(configuration);
             populate(null);
+        }
+    }
+
+    private class DnDExecutor implements UndoableExecutor<DnDCommand> {
+
+        @Override
+        public void unexecute(DnDCommand command) throws Exception {
+            configuration = command.getPrevConfig();
+            populate(configuration);
+        }
+
+        @Override
+        public void execute(DnDCommand command) throws Exception {
+            configuration = command.getNewConfig();
+            populate(configuration);
         }
     }
 }

@@ -80,7 +80,7 @@ public class CommandDelegator implements Observable {
 
             //remove any redoable commands in front of published command
             //i.e. can't publish, undo, publish, then redo the first publish
-            while (commands.hasNext()) {
+            while (commands.hasNext() && record) {
                 commands.next();
                 commands.remove();
             }
