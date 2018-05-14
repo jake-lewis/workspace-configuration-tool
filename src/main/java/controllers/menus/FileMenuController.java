@@ -16,8 +16,6 @@ import model.configuration.ConfigurationFactory;
 import model.configuration.FileType;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 
 class FileMenuController {
     private final Stage stage;
@@ -100,7 +98,7 @@ class FileMenuController {
                 fileChooser.setInitialDirectory(init);
             }
 
-            populateExtensions(fileChooser);
+            FileType.populateConfigurationExtensions(fileChooser);
 
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
@@ -112,18 +110,6 @@ class FileMenuController {
             e.printStackTrace();
             Alert alert = new ExceptionAlert(e);
             alert.showAndWait();
-        }
-    }
-
-    private void populateExtensions(FileChooser fileChooser) {
-        for (FileType type : FileType.values()) {
-            if (type != FileType.UNSUPPORTED) {
-                List<String> extensions = new LinkedList<>();
-                for (String value : type.getValues()) {
-                    extensions.add("*." + value);
-                }
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(type.name(), extensions));
-            }
         }
     }
 
@@ -143,7 +129,7 @@ class FileMenuController {
     private void saveAs() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Configuration");
-        populateExtensions(fileChooser);
+        FileType.populateConfigurationExtensions(fileChooser);
         File file = fileChooser.showSaveDialog(stage);
         lastSavedFile = file;
         if (file != null) {

@@ -4,9 +4,9 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.HBox?>
 
-<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:id="footerContainer" fx:controller="controllers.menus.FooterController">
+<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.menus.FooterController">
    <children>
-      <ToolBar  fx:id="leftBar" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" HBox.hgrow="SOMETIMES">
+      <ToolBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" HBox.hgrow="SOMETIMES">
          <items>
             <Label fx:id="statusLabel" />
          </items>
