@@ -97,7 +97,7 @@ public class ConfigurationFactory {
         dirs = new LinkedList<>(dirs);
 
         Pattern prefixPattern = Pattern.compile("(\\w+) (.*)");
-        Pattern namePattern = Pattern.compile("v");
+        Pattern namePattern = Pattern.compile("(.*)");
         Pattern separatorPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])");
         Pattern enumerationPattern = Pattern.compile("([^\\w\\d\\s]|[_+*?^$.])(?:\\w+)(?:-\\d{1,5})? ");
 

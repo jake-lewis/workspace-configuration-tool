@@ -5,16 +5,15 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MenuBarController implements Initializable, InvalidationListener{
+public class MenuBarController implements Initializable, PropertyChangeListener {
 
     private CommandDelegator commandDelegator;
 
@@ -34,6 +33,9 @@ public class MenuBarController implements Initializable, InvalidationListener{
     Button undoBtn;
 
     @FXML
+    SplitMenuButton multiUndoButton;
+
+    @FXML
     Button redoBtn;
 
     @Override
@@ -50,7 +52,7 @@ public class MenuBarController implements Initializable, InvalidationListener{
 
         undoBtn.setOnAction(event -> {
             try {
-                boolean result = commandDelegator.undo();
+                commandDelegator.undo();
                 //TODO handle if no executor is subscribed
             } catch (Exception e) {
                 e.printStackTrace();
@@ -60,7 +62,7 @@ public class MenuBarController implements Initializable, InvalidationListener{
 
         redoBtn.setOnAction(event -> {
             try {
-                boolean result = commandDelegator.redo();
+                commandDelegator.redo();
                 //TODO handle if no executor is subscribed
             } catch (Exception e) {
                 e.printStackTrace();
@@ -96,8 +98,8 @@ public class MenuBarController implements Initializable, InvalidationListener{
     }
 
     @Override
-    public void invalidated(Observable observable) {
-        if (observable instanceof CommandDelegator) {
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() instanceof CommandDelegator) {
             updateUndoUI();
             updateRedoUI();
         }
