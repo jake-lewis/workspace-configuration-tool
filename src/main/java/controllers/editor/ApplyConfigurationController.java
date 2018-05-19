@@ -2,10 +2,14 @@ package controllers.editor;
 
 import controllers.CommandDelegator;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import model.ExceptionAlert;
 import model.commands.concrete.*;
 import model.configuration.Configuration;
@@ -15,6 +19,7 @@ import model.configuration.InvalidConfigurationException;
 import model.executors.Executor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -101,6 +106,9 @@ public class ApplyConfigurationController implements EditorController {
                                 alert.showAndWait();
                             }
                         });
+                        break;
+                    case "addFileBtn":
+                        ((Button) node).setOnAction(event -> addFile());
                 }
             }
         }
@@ -207,6 +215,18 @@ public class ApplyConfigurationController implements EditorController {
             }
         });
         return item;
+    }
+
+    private void addFile() {
+        try {
+            BorderPane fileSelector = FXMLLoader.load(getClass().getResource("/fxml/FileSelector.fxml"));
+            Stage secondaryStage = new Stage();
+            secondaryStage.setTitle("Add a new file");
+            secondaryStage.setScene(new Scene(fileSelector));
+            secondaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ApplyConfigExecutor implements Executor<ApplyConfigCommand> {
