@@ -254,6 +254,7 @@ public class CommandDelegator {
      * @return true if there is a command that can be redone
      */
     public boolean canRedo() {
+        //Check if there is a command that has been done, that is redoable
         if (commands.hasNext()) {
             final Command next = commands.next();
             commands.previous(); //Revert position of ListIterator
