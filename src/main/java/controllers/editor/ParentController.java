@@ -1,10 +1,10 @@
 package controllers.editor;
 
 import controllers.CommandDelegator;
+import javafx.beans.property.BooleanProperty;
+import javafx.scene.control.TreeItem;
 import model.ExceptionAlert;
-import model.commands.concrete.CloseConfigCommand;
-import model.commands.concrete.ConfigCommand;
-import model.commands.concrete.SaveConfigCommand;
+import model.commands.concrete.*;
 import model.configuration.*;
 import model.executors.Executor;
 import model.executors.UndoableExecutor;
@@ -20,16 +20,24 @@ public class ParentController implements EditorController {
     private static ParentController INSTANCE = new ParentController();
     private static List<EditorController> controllers = new ArrayList<>();
     private Configuration configuration;
+    private boolean isExecuting = false;
 
     private ParentController() {
         CommandDelegator.getINSTANCE().subscribe(new ConfigExecutor(), ConfigCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new TreeItemExpansionExecutor(), ToggleExpandTreeItemCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new TreeViewExpansionExecutor(), ToggleTreeExpansionCommand.class);
         CommandDelegator.getINSTANCE().subscribe(new SaveExecutor(), SaveConfigCommand.class);
         CommandDelegator.getINSTANCE().subscribe(new CloseExecutor(), CloseConfigCommand.class);
+        CommandDelegator.getINSTANCE().subscribe(new DnDExecutor(), DnDCommand.class);
         configuration = ConfigurationFactory.getNullConfig();
     }
 
     public static ParentController getInstance() {
         return INSTANCE;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public void register(EditorController controller) {
@@ -41,6 +49,10 @@ public class ParentController implements EditorController {
         for (EditorController controller: controllers) {
             controller.populate(configuration);
         }
+    }
+
+    public boolean isExecuting() {
+        return isExecuting;
     }
 
     private class ConfigExecutor implements UndoableExecutor<ConfigCommand> {
@@ -62,6 +74,52 @@ public class ParentController implements EditorController {
         public void reexecute(ConfigCommand command) throws Exception {
             configuration = command.getNextConfig();
             populate(configuration);
+        }
+    }
+
+    private class TreeItemExpansionExecutor implements UndoableExecutor<ToggleExpandTreeItemCommand> {
+
+        @Override
+        public void unexecute(ToggleExpandTreeItemCommand command) throws Exception {
+            isExecuting = true;
+            TreeItem item = command.getTreeView().getTreeItem(command.getIndex());
+            BooleanProperty expanded = item.expandedProperty();
+            expanded.set(!expanded.get());
+            isExecuting = false;
+        }
+
+        @Override
+        public void reexecute(ToggleExpandTreeItemCommand command) throws Exception {
+            unexecute(command);
+        }
+
+        @Override
+        public void execute(ToggleExpandTreeItemCommand command) throws Exception {
+            //NOOP
+        }
+    }
+
+    private class TreeViewExpansionExecutor implements UndoableExecutor<ToggleTreeExpansionCommand> {
+
+        @Override
+        public void unexecute(ToggleTreeExpansionCommand command) throws Exception {
+            isExecuting = true;
+            command.getStrategy().unapply();
+            isExecuting = false;
+        }
+
+        @Override
+        public void reexecute(ToggleTreeExpansionCommand command) throws Exception {
+            isExecuting = true;
+            command.getStrategy().reapply();
+            isExecuting = false;
+        }
+
+        @Override
+        public void execute(ToggleTreeExpansionCommand command) throws Exception {
+            isExecuting = true;
+            command.getStrategy().apply();
+            isExecuting = false;
         }
     }
 
@@ -111,6 +169,21 @@ public class ParentController implements EditorController {
         public void execute(CloseConfigCommand command) throws Exception {
             command.setConfiguration(configuration);
             populate(null);
+        }
+    }
+
+    private class DnDExecutor implements UndoableExecutor<DnDCommand> {
+
+        @Override
+        public void unexecute(DnDCommand command) throws Exception {
+            configuration = command.getPrevConfig();
+            populate(configuration);
+        }
+
+        @Override
+        public void execute(DnDCommand command) throws Exception {
+            configuration = command.getNewConfig();
+            populate(configuration);
         }
     }
 }

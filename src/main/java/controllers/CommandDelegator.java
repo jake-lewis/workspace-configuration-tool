@@ -1,20 +1,25 @@
 package controllers;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import model.commands.Command;
 import model.commands.UndoableCommand;
 import model.executors.Executor;
 import model.executors.UndoableExecutor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
-public class CommandDelegator implements Observable {
+/**
+ * Controls the delegation of commands to their respective executor classes. Provides the ability to listen for the execution of commands.
+ */
+public class CommandDelegator {
 
-    private static CommandDelegator INSTANCE = new CommandDelegator();
+    private static final CommandDelegator INSTANCE = new CommandDelegator();
 
-    private Map<Class<?>, Executor<?>> executors = new HashMap<>();
-    private ListIterator<Command> commands = new LinkedList<Command>().listIterator();
+    private final Map<Class<?>, Executor<?>> executors = new TreeMap<>(new ClassHierarchyComparator());
+    private final ListIterator<Command> commands = new LinkedList<Command>().listIterator();
+    private final SortedSet<ExecutionRecord> executionRecords = new TreeSet<>();
 
     private CommandDelegator() {}
 
@@ -22,14 +27,22 @@ public class CommandDelegator implements Observable {
         return INSTANCE;
     }
 
-    private List<InvalidationListener> listeners = new LinkedList<>();
+    private final List<PropertyChangeListener> listeners = new LinkedList<>();
 
-    public <C extends Command> boolean subscribe(Executor<C> executor, Class <C> clazz) {
+    /**
+     * Subscribes an executor to listen for and execute any commands that are an instance of the specified class, or any sub-classes
+     * @param executor The executor for the command or sub-classes of the command
+     * @param clazz The class of the command
+     * @param <C> The type of the command the executor will handle
+     * @return Returns true if the executor is successfully subscribed, returns false if the an executor of the class or a parent class is already subscribed
+     */
+    public <C extends Command> boolean subscribe(final Executor<C> executor, final Class <C> clazz) {
 
-        //TODO multiple classes? e.g. Class <C>... clazz
+        Objects.requireNonNull(executor, "Executor cannot be null");
+        Objects.requireNonNull(clazz, "Clazz cannot be null");
 
         //prevent duplicate subscription to a command
-        for (Class subbedClass: executors.keySet()) {
+        for (Class<?> subbedClass: executors.keySet()) {
             if (subbedClass.isAssignableFrom(clazz)) {
                 return false;
             }
@@ -39,162 +52,220 @@ public class CommandDelegator implements Observable {
         return true;
     }
 
-    public <C extends Command> boolean unsubscribe(Executor<C> executor) {
-        notifyListeners();
-        return executors.entrySet().removeIf((entry) -> entry.getValue().equals(executor));
+    /**
+     * Unsubscribes the executor from the delegator
+     * @param executor The executor to unsubscribe
+     * @param <C> The type of the command the executor handles
+     * @return Returns true if the executor is found and removed, returns false if it is not found
+     */
+    public <C extends Command> boolean unsubscribe(final Executor<C> executor) {
+        return executors.entrySet().removeIf((e) -> e.getValue().equals(executor));
     }
 
-    private Executor getExecutor(Command command) {
-        for (Class clazz: executors.keySet()) {
-            if (clazz.isAssignableFrom(command.getClass())) {
-                return executors.get(clazz);
+    /**
+     * Gets the most generic executor for the given command
+     * @param command The command for the executor to handle
+     * @return Returns the most generic executor for the given command, returns null if no suitable executor can be found
+     * @throws NoSuchExecutorException if there is no registered {@link Executor} for the given {@link Command}
+     */
+    private Executor getExecutor(final Command command) {
+        Objects.requireNonNull(command, "command must be not null");
+        for (final Map.Entry<Class<?>, Executor<?>> entry : executors.entrySet()) {
+            if (entry.getKey().isAssignableFrom(command.getClass())) {
+                return entry.getValue();
             }
         }
-
-        return null;
+        throw new NoSuchExecutorException(command);
     }
 
     /**
-     * Publishes command to the subscribed executor. Always records for undo, see {@link #publish(Command, boolean)} <br/>
+     * Publishes command to the most generic subscribed executor. Always records for undo, see {@link #publish(Command, boolean)}
      * @param command The command to execute
-     * @return false if no executor is subscribed.
-     * @throws Exception if the command does not execute successfully
+     * @throws ExecutionException if the command does not execute successfully
+     * @throws NoSuchExecutorException if there is no registered {@link Executor} for the given {@link Command}
      */
-    public synchronized boolean publish(Command command) throws Exception {
-        return publish(command, true);
+    public synchronized void publish(final Command command) throws ExecutionException {
+        this.publish(command, true);
     }
 
     /**
-     * Publishes command to the subscribed executor, with the option of recording for undo <br/>
-     * @param command The command to execute
+     * Publishes command to the most generic subscribed executor for that command, with the option of recording for undo
+     * @param command The command to publish and execute
      * @param record whether or not to add the command to the stack, enabling undo/redo
-     * @return false if no executor is subscribed.
-     * @throws Exception if the command does not execute successfully
+     * @throws ExecutionException if the command does not execute successfully
+     * @throws NoSuchExecutorException if there is no registered {@link Executor} for the given {@link Command}
      */
-    public synchronized boolean publish(Command command, boolean record) throws Exception {
-        Executor executor = getExecutor(command);
+    public synchronized void publish(final Command command, final boolean record) throws ExecutionException {
+        final Executor executor = getExecutor(command);
 
-        if (executor != null) {
+        //remove any redoable commands in front of published command
+        //i.e. can't publish, undo, publish, then redo the first publish
+        if (record)
+        {
+            this.clearRedoHistory();
+        }
 
-            //remove any redoable commands in front of published command
-            //i.e. can't publish, undo, publish, then redo the first publish
-            while (commands.hasNext()) {
-                commands.next();
-                commands.remove();
-            }
 
-            //If the command is not undoable, clear all previous history
-            if (!(command instanceof UndoableCommand)) {
-                while (commands.hasPrevious()) {
-                    commands.previous();
-                    commands.remove();
-                }
-            }
+        //If the command is not undoable, clear all previous history
+        if (!(command instanceof UndoableCommand) && record) {
+            this.clearUndoHistory();
+        }
 
+        try {
             //Unchecked call to execute()
             //doing this because can't determine type until runtime, will be correct
             //noinspection unchecked
             executor.execute(command);
-            if (record) {
-                commands.add(command);
-                notifyListeners();
-                System.out.println("Do " + command.getName()); //TODO issue #23
-            }
-            return true;
+        } catch (Exception e) {
+            throw new ExecutionException(e);
         }
 
-        return false;
+        if (record) {
+            commands.add(command);
+        }
+
+        this.addExecutionRecord(new ExecutionRecord(command, ExecutionRecord.Operation.DO));
     }
 
     /**
      * Call unexecute command on executor on previous command
      * Only works if both command and executor are undoable
-     * @return false if no executor is subscribed
-     * @throws Exception if undo does not execute successfully
+     * @throws NoSuchElementException if there is no {@link Command } to be undone
+     * @throws ExecutionException if undo does not execute successfully
+     * @throws NoSuchExecutorException if there is no registered {@link Executor} for the {@link Command} to be undone
      */
-    public synchronized boolean undo() throws Exception {
-        if (commands.hasPrevious()) {
-            Command command = commands.previous();
+    public synchronized void undo() throws ExecutionException {
 
-            try {
-                if (command instanceof UndoableCommand) {
-                    Executor executor = getExecutor(command);
-                    if (executor instanceof UndoableExecutor) {
-                        UndoableExecutor undoableExecutor = (UndoableExecutor) executor;
-                        //Unchecked call to unexecute()
-                        //doing this because can't determine type until runtime, will be correct
-                        //noinspection unchecked
-                        undoableExecutor.unexecute((UndoableCommand) command);
-                        notifyListeners();
-                        System.out.println("Undo " + command.getName());
-                        return true;
-                    }
+        final Command command = commands.previous();
+
+        try {
+            if (command instanceof UndoableCommand) {
+                Executor executor = getExecutor(command);
+                if (executor instanceof UndoableExecutor) {
+                    final UndoableExecutor undoableExecutor = (UndoableExecutor) executor;
+                    //Unchecked call to unexecute()
+                    //doing this because can't determine type until runtime, will be correct
+                    //noinspection unchecked
+                    undoableExecutor.unexecute((UndoableCommand) command);
+
+                    this.addExecutionRecord(new ExecutionRecord(command, ExecutionRecord.Operation.UNDO));
+                    return;
                 }
-                commands.next();
-            } catch (Exception e) {
-                //Undo rolling history back
-                commands.next();
-                throw e;
             }
+            commands.next();
+        } catch (NoSuchExecutorException e) {
+            commands.next();
+            throw e;
+        } catch (final Exception e) {
+            //Undo rolling history back
+            this.clearUndoHistory();
+            throw new ExecutionException(e);
+        }
+    }
+
+    public void undo(int count) throws ExecutionException {
+        if (count < 0)
+        {
+            throw new IndexOutOfBoundsException("Index out of range: " + count);
         }
 
-        return false;
+        for (int i = 0; i < count; i++) {
+            undo();
+        }
     }
 
     /**
-     * Call unexecute command on executor on previous command
-     * Only works if both command and executor are undoable
-     * @return false if no executor is subscribed
-     * @throws Exception if undo does not execute successfully
+     * Call reexecute command on executor on previous command
+     * Only works if both command and executor are redoable
+     * @throws NoSuchElementException if there is no {@link Command } to be redone
+     * @throws ExecutionException if redo does not execute successfully
+     * @throws NoSuchExecutorException if there is no registered {@link Executor} for the {@link Command} to be redone
      */
-    public synchronized boolean redo() throws Exception {
-        if (commands.hasNext()) {
-            Command command = commands.next();
+    public synchronized void redo() throws ExecutionException {
 
-            try {
-                if (command instanceof UndoableCommand) {
-                    Executor executor = getExecutor(command);
-                    if (executor instanceof UndoableExecutor) {
-                        UndoableExecutor undoableExecutor = (UndoableExecutor) executor;
-                        //Unchecked call to unexecute()
-                        //doing this because can't determine type until runtime, will be correct
-                        //noinspection unchecked
-                        undoableExecutor.reexecute((UndoableCommand) command);
-                        notifyListeners();
-                        System.out.println("Redo " + command.getName());
-                        return true;
-                    }
+        final Command command = commands.next();
+
+        try {
+            if (command instanceof UndoableCommand) {
+                final Executor executor = getExecutor(command);
+                if (executor instanceof UndoableExecutor) {
+                    final UndoableExecutor undoableExecutor = (UndoableExecutor) executor;
+                    //Unchecked call to unexecute()
+                    //doing this because can't determine type until runtime, will be correct
+                    //noinspection unchecked
+                    undoableExecutor.reexecute((UndoableCommand) command);
+
+                    this.addExecutionRecord(new ExecutionRecord(command, ExecutionRecord.Operation.REDO));
+                    return;
                 }
-                commands.previous();
-            } catch (Exception e) {
-                //Undo rolling history back
-                commands.previous();
-                throw e;
             }
+            commands.previous();
+        } catch (NoSuchExecutorException e) {
+            commands.previous();
+            throw e;
+        } catch (Exception e) {
+            //Undo rolling history back
+            this.clearRedoHistory();
+            throw new ExecutionException(e);
         }
-
-        return false;
     }
 
+    public void redo(int count) throws ExecutionException {
+        if (count < 0)
+        {
+            throw new IndexOutOfBoundsException("Index out of range: " + count);
+        }
+
+        for (int i = 0; i < count; i++) {
+            redo();
+        }
+    }
+
+    private void clearUndoHistory()
+    {
+        while (commands.hasPrevious()) {
+            commands.previous();
+            commands.remove();
+        }
+    }
+
+    private void clearRedoHistory()
+    {
+        while (commands.hasNext()) {
+            commands.next();
+            commands.remove();
+        }
+    }
+
+    /**
+     * @return true if there is a command that can be undone
+     */
     public boolean canUndo() {
         //Check if there is a previous command, that is undoable
         if (commands.hasPrevious()) {
-            Command previous = commands.previous();
+            final Command previous = commands.previous();
             commands.next(); //revert position of ListIterator
             return previous instanceof UndoableCommand;
         }
         return false;
     }
 
+    /**
+     * @return true if there is a command that can be redone
+     */
     public boolean canRedo() {
+        //Check if there is a command that has been done, that is redoable
         if (commands.hasNext()) {
-            Command next = commands.next();
+            final Command next = commands.next();
             commands.previous(); //Revert position of ListIterator
             return next instanceof UndoableCommand;
         }
         return false;
     }
 
+    /**
+     * @return the name of the command that would be the result of calling the {@link #undo()} method, returns null if no command can be undone
+     */
     public String getUndoName() {
         if (canUndo()) {
             commands.previous();
@@ -204,6 +275,26 @@ public class CommandDelegator implements Observable {
         return null;
     }
 
+    public List<String> getUndoNames(int count) {
+        List<String> results = new ArrayList<>(count);
+        int steps = 0;
+
+        while (steps < count && commands.hasPrevious()) {
+            results.add(commands.previous().getName());
+            steps++;
+        }
+
+        while (steps > 0) {
+            commands.next();
+            steps--;
+        }
+
+        return results;
+    }
+
+    /**
+     * @return the name of the command that would be the result of calling the {@link #redo()} method, returns null if no command can be redone,
+     */
     public String getRedoName() {
         if (canRedo()) {
             commands.next();
@@ -213,19 +304,84 @@ public class CommandDelegator implements Observable {
         return null;
     }
 
-    @Override
-    public void addListener(InvalidationListener listener) {
-        this.listeners.add(listener);
+    public List<String> getRedoNames(int count) {
+        List<String> results = new ArrayList<>(count);
+        int steps = 0;
+
+        while (steps < count && commands.hasNext()) {
+            results.add(commands.next().getName());
+            steps++;
+        }
+
+        while (steps > 0) {
+            commands.previous();
+            steps--;
+        }
+
+        return results;
     }
 
-    @Override
-    public void removeListener(InvalidationListener listener) {
-        this.listeners.remove(listener);
+    /**
+     * Adds a new {@link ExecutionRecord} to the list of previously performed commands. Notifies any listeners of {@link CommandDelegator}
+     * @param newRecord The ExecutionRecord to add
+     * @return true if the record is successfully added, false otherwise
+     */
+    private boolean addExecutionRecord(final ExecutionRecord newRecord) {
+        final ExecutionRecord latestRecord = executionRecords.isEmpty() ? null : executionRecords.first();
+
+        if (executionRecords.add(newRecord)) {
+            notifyListeners(latestRecord, newRecord);
+            return true;
+        }
+
+        return false;
     }
 
-    private void notifyListeners() {
-        for (InvalidationListener listener : listeners) {
-            listener.invalidated(this);
+    public Optional<ExecutionRecord> getLatestExecutionRecord() {
+        return executionRecords.isEmpty() ? Optional.empty() : Optional.of(executionRecords.first());
+    }
+
+    public SortedSet<ExecutionRecord> getExecutionRecords() {
+        return new TreeSet<>(executionRecords);
+    }
+
+    /**
+     * Gets the {@code X} most recent records where x is the value of count parameter.
+     *
+     * @param count the number of ExecutionRecords to return
+     * @return a new SortedSet containing the requested records
+     * @throws IndexOutOfBoundsException if {@code count} is less than 0
+     */
+    public SortedSet<ExecutionRecord> getExecutionRecords(final int count) {
+        if (count < 0)
+        {
+            throw new IndexOutOfBoundsException("Index out of range: " + count);
+        }
+        final SortedSet<ExecutionRecord> result = new TreeSet<>();
+        final Iterator<ExecutionRecord> iterator = executionRecords.iterator();
+        for (int i = 0; i < count && iterator.hasNext(); i++) {
+            result.add(iterator.next());
+        }
+        return result;
+    }
+
+    /**
+     * Registers an invalidation listener, listener is invalidated when a command is executed, unexecuted, or reexecuted
+     * @param listener The listener to register
+     * @return {@code true} (as specified by {@link Collection#add})
+     */
+    public boolean addListener(final PropertyChangeListener listener) {
+        return this.listeners.add(listener);
+    }
+
+    public boolean removeListener(final PropertyChangeListener listener) {
+        return this.listeners.remove(listener);
+    }
+
+    private void notifyListeners(final Object oldValue, final Object newValue) {
+        final PropertyChangeEvent event = new PropertyChangeEvent(this, "lastCommandStatus", oldValue, newValue);
+        for (final PropertyChangeListener listener : listeners) {
+            listener.propertyChange(event);
         }
     }
 }

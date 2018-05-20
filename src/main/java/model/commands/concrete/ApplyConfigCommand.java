@@ -1,7 +1,7 @@
 package model.commands.concrete;
 
 import model.commands.Command;
-import model.strategies.ConfigApplicator;
+import model.strategies.applyconfig.ConfigApplicator;
 
 import java.io.File;
 

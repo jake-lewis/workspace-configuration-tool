@@ -2,14 +2,16 @@ package controllers.editor;
 
 import controllers.CommandDelegator;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import model.ExceptionAlert;
-import model.commands.concrete.ApplyConfigCommand;
-import model.commands.concrete.ApplyToRootCommand;
-import model.commands.concrete.ApplyToTargetCommand;
+import model.commands.concrete.*;
 import model.configuration.Configuration;
 import model.configuration.ConfigurationFactory;
 import model.configuration.Directory;
@@ -17,6 +19,7 @@ import model.configuration.InvalidConfigurationException;
 import model.executors.Executor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,6 +44,7 @@ public class ApplyConfigurationController implements EditorController {
         CommandDelegator.getINSTANCE().subscribe(new ApplyConfigExecutor(), ApplyConfigCommand.class);
         BorderPane applyConfigPane = (BorderPane) applyConfigTab.getContent();
         GridPane configurationProperties = (GridPane) ((BorderPane) applyConfigPane.getLeft()).getTop();
+        GridPane treeControls = (GridPane) ((BorderPane) applyConfigPane.getLeft()).getBottom();
         SplitPane splitPane = (SplitPane) applyConfigPane.getCenter();
         ObservableList<Node> splitPaneChildren = splitPane.getItems();
         for (Node node : splitPaneChildren) {
@@ -102,6 +106,37 @@ public class ApplyConfigurationController implements EditorController {
                                 alert.showAndWait();
                             }
                         });
+                        break;
+                    case "addFileBtn":
+                        ((Button) node).setOnAction(event -> addFile());
+                }
+            }
+        }
+
+        gridPaneChildren = treeControls.getChildren();
+        for (Node node : gridPaneChildren) {
+            if (node.getId() != null) {
+                switch (node.getId()) {
+                    case "expandAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new ExpandAllTreeCommand(targetVisualEditor, "Workspace Target Tree"));
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
+                    case "collapseAllBtn":
+                        ((Button) node).setOnAction(event -> {
+                            try {
+                                CommandDelegator.getINSTANCE().publish(
+                                        new CollapseAllTreeCommand(targetVisualEditor, "Workspace Target Tree"));
+                            } catch (Exception e) {
+                                new ExceptionAlert(e).showAndWait();
+                            }
+                        });
+                        break;
                 }
             }
         }
@@ -153,7 +188,7 @@ public class ApplyConfigurationController implements EditorController {
         TreeItem<Directory> treeRoot = new TreeItem<>();
         if (directories != null) {
             for (Directory rootDir : directories) {
-                treeRoot.getChildren().add(createTreeItem(rootDir));
+                treeRoot.getChildren().add(createTreeItem(rootDir, treeView));
             }
         }
 
@@ -162,13 +197,36 @@ public class ApplyConfigurationController implements EditorController {
         return directories;
     }
 
-    private TreeItem createTreeItem(Directory dir) {
+    private TreeItem createTreeItem(Directory dir, TreeView treeView) {
         TreeItem<Directory> item = new TreeItem<>(dir);
         List<Directory> children = dir.getChildren();
         for (Directory child : children) {
-            item.getChildren().add(createTreeItem(child));
+            item.getChildren().add(createTreeItem(child, treeView));
         }
+
+        item.expandedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!ParentController.getInstance().isExecuting()) {
+                try {
+                    CommandDelegator.getINSTANCE().publish(
+                            new ToggleExpandTreeItemCommand(treeView, treeView.getRow(item), item.getValue().toString()), undoableUI);
+                } catch (Exception e) { //TODO handle exception better?
+                    e.printStackTrace();
+                }
+            }
+        });
         return item;
+    }
+
+    private void addFile() {
+        try {
+            BorderPane fileSelector = FXMLLoader.load(getClass().getResource("/fxml/FileSelector.fxml"));
+            Stage secondaryStage = new Stage();
+            secondaryStage.setTitle("Add a new file");
+            secondaryStage.setScene(new Scene(fileSelector));
+            secondaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ApplyConfigExecutor implements Executor<ApplyConfigCommand> {

@@ -44,17 +44,15 @@ public class TextEditorController implements EditorController {
         }
     }
 
-    private boolean apply() {
+    private void apply() {
         try {
             Command command = new UpdateConfigCommand(ConfigurationFactory.create(textArea.getText(), FileType.XML), configuration);
-            return CommandDelegator.getINSTANCE().publish(command);
+            CommandDelegator.getINSTANCE().publish(command);
         } catch (Exception e) {
             e.printStackTrace();
 
             Alert alert = new ExceptionAlert(e);
             alert.showAndWait();
         }
-
-        return false;
     }
 }

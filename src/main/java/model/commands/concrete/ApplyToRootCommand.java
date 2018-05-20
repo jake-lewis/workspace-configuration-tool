@@ -1,11 +1,11 @@
 package model.commands.concrete;
 
-import model.strategies.ApplyToRoot;
+import model.strategies.applyconfig.ApplyToRootStrategy;
 
 public class ApplyToRootCommand extends ApplyConfigCommand {
 
     public ApplyToRootCommand(String sourcePath, String targetPath) {
-        super(new ApplyToRoot(sourcePath, targetPath));
+        super(new ApplyToRootStrategy(sourcePath, targetPath));
     }
 
     @Override

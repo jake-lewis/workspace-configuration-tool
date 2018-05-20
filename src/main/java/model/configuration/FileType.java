@@ -1,7 +1,10 @@
 package model.configuration;
 
+import javafx.stage.FileChooser;
+
 import java.io.File;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public enum FileType {
@@ -39,5 +42,17 @@ public enum FileType {
         }
 
         return extension;
+    }
+
+    public static void populateConfigurationExtensions(FileChooser fileChooser) {
+        for (FileType type : FileType.values()) {
+            if (type != FileType.UNSUPPORTED) {
+                List<String> extensions = new LinkedList<>();
+                for (String value : type.getValues()) {
+                    extensions.add("*." + value);
+                }
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(type.name(), extensions));
+            }
+        }
     }
 }

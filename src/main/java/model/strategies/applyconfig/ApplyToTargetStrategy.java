@@ -1,4 +1,4 @@
-package model.strategies;
+package model.strategies.applyconfig;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.io.FileUtils.copyFileToDirectory;
 
-public class ApplyToTarget extends ConfigApplicator {
+public class ApplyToTargetStrategy extends ConfigApplicator {
 
     private boolean overwrite = false;
     private boolean overwriteSet = false;
     private boolean isCancel = false;
 
-    public ApplyToTarget(String rootPath, String targetPath) {
+    public ApplyToTargetStrategy(String rootPath, String targetPath) {
         super(rootPath, targetPath);
     }
 
