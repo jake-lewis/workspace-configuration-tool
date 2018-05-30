@@ -47,7 +47,7 @@
                                                     <TextField fx:id="targetField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                        <Button fx:id="rootToTargetBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Copy from Root to Target" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" />
                                                     <Button fx:id="targetToRootBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Copy from Target to Root" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" />
-                                                    <Button fx:id="addFileBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add New File" GridPane.columnSpan="2147483647" GridPane.rowIndex="5" />
+                                                    <!--<Button fx:id="addFileBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add New File" GridPane.columnSpan="2147483647" GridPane.rowIndex="5" />-->
                                                 </children>
                                             </GridPane>
                                         </top>
