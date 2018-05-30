@@ -1,14 +1,15 @@
 package controllers.editor;
 
 import controllers.CommandDelegator;
+import controllers.dialogs.FileSelectorController;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.ExceptionAlert;
 import model.commands.concrete.*;
@@ -21,7 +22,6 @@ import model.executors.Executor;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ApplyConfigurationController implements EditorController {
 
@@ -219,11 +219,20 @@ public class ApplyConfigurationController implements EditorController {
 
     private void addFile() {
         try {
-            BorderPane fileSelector = FXMLLoader.load(getClass().getResource("/fxml/FileSelector.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/FileSelector.fxml"));
+            Parent selectorRoot = loader.load();
+            FileSelectorController controller = loader.getController();
+
             Stage secondaryStage = new Stage();
             secondaryStage.setTitle("Add a new file");
-            secondaryStage.setScene(new Scene(fileSelector));
-            secondaryStage.show();
+            secondaryStage.setScene(new Scene(selectorRoot));
+            controller.setStageAndDirectories(secondaryStage, targetVisualEditor.getRoot());
+            secondaryStage.showAndWait();
+
+            if (controller.includesPrefix()) {
+                //add file
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -13,7 +13,7 @@
       </ToolBar>
       <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" HBox.hgrow="SOMETIMES">
         <items>
-            <Label text="Version 0.5" />
+            <Label text="Version 1.1" />
         </items>
       </ToolBar>
    </children>

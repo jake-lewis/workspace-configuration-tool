@@ -32,9 +32,8 @@ public class XMLConfiguration implements Configuration {
     private String textContent;
 
     private XMLConfiguration() {
-    }
 
-    ;
+    }
 
     public XMLConfiguration(File file) throws IOException, InvalidConfigurationException {
         this(file, false);

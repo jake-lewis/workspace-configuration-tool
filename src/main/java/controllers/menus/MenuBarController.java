@@ -41,7 +41,6 @@ public class MenuBarController implements Initializable, PropertyChangeListener 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         FileMenuController fileMenuController = new FileMenuController(stage, fileMenu);
-        EditMenuController editMenuController = new EditMenuController(editMenu);
         HelpMenuController helpMenuController = new HelpMenuController(helpMenu);
 
         commandDelegator = CommandDelegator.getINSTANCE();

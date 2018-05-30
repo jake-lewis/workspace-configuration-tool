@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
@@ -12,68 +13,58 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controllers.menus.MenuBarController">
+<HBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.menus.MenuBarController">
     <children>
-        <VBox/>
+        <VBox />
         <MenuBar>
             <menus>
                 <Menu fx:id="fileMenu" mnemonicParsing="false" text="File">
                     <items>
                         <Menu mnemonicParsing="false" text="New">
-                            <MenuItem fx:id="fileNewEmpty" text="Empty"/>
-                            <MenuItem fx:id="fileNewFolders" mnemonicParsing="false" text="From folders..."/>
+                            <MenuItem fx:id="fileNewEmpty" text="Empty" />
+                            <MenuItem fx:id="fileNewFolders" mnemonicParsing="false" text="From folders..." />
                         </Menu>
-                        <MenuItem fx:id="fileOpen" mnemonicParsing="false" text="Open..."/>
-                        <MenuItem fx:id="fileSave" mnemonicParsing="false" text="Save"/>
-                        <MenuItem fx:id="fileSaveAs" mnemonicParsing="false" text="Save As..."/>
-                        <MenuItem fx:id="fileClose" mnemonicParsing="false" text="Close Configuration"/>
-                        <MenuItem fx:id="fileExit" mnemonicParsing="false" text="Exit"/>
-                    </items>
-                </Menu>
-                <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
-                    <items>
-                        <MenuItem fx:id="editCut" mnemonicParsing="false" text="Cut"/>
-                        <MenuItem fx:id="editCopy" mnemonicParsing="false" text="Copy"/>
-                        <MenuItem fx:id="editPaste" mnemonicParsing="false" text="Paste"/>
-                        <MenuItem fx:id="editDelete" mnemonicParsing="false" text="Delete"/>
+                        <MenuItem fx:id="fileOpen" mnemonicParsing="false" text="Open..." />
+                        <MenuItem fx:id="fileSave" mnemonicParsing="false" text="Save" />
+                        <MenuItem fx:id="fileSaveAs" mnemonicParsing="false" text="Save As..." />
+                        <MenuItem fx:id="fileClose" mnemonicParsing="false" text="Close Configuration" />
+                        <MenuItem fx:id="fileExit" mnemonicParsing="false" text="Exit" />
                     </items>
                 </Menu>
                 <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem fx:id="helpUserGuide" mnemonicParsing="false" text="User Guide"/>
-                        <MenuItem fx:id="helpAbout" mnemonicParsing="false" text="About"/>
+                        <MenuItem fx:id="helpUserGuide" mnemonicParsing="false" text="User Guide" />
                     </items>
                 </Menu>
             </menus>
         </MenuBar>
         <ToolBar style="-fx-padding: 0;">
             <HBox.margin>
-                <Insets/>
+                <Insets />
             </HBox.margin>
             <items>
                 <Button fx:id="undoBtn" mnemonicParsing="false">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../images/undo.png"/>
+                                <Image url="@../images/undo.png" />
                             </image>
                         </ImageView>
                     </graphic>
                     <tooltip>
-                        <Tooltip text="Empty Tooltip"/>
+                        <Tooltip text="Empty Tooltip" />
                     </tooltip>
                 </Button>
                 <Button fx:id="redoBtn" layoutX="10.0" layoutY="10.0" mnemonicParsing="false">
                     <graphic>
                         <ImageView pickOnBounds="true" preserveRatio="true">
                             <image>
-                                <Image url="@../images/redo.png"/>
+                                <Image url="@../images/redo.png" />
                             </image>
                         </ImageView>
                     </graphic>
                     <tooltip>
-                        <Tooltip text="Empty Tooltip"/>
+                        <Tooltip text="Empty Tooltip" />
                     </tooltip>
                 </Button>
             </items>

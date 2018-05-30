@@ -31,18 +31,9 @@
                         <MenuItem fx:id="fileExit" mnemonicParsing="false" text="Exit" />
                     </items>
                 </Menu>
-                <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
-                    <items>
-                        <MenuItem fx:id="editCut" mnemonicParsing="false" text="Cut" />
-                        <MenuItem fx:id="editCopy" mnemonicParsing="false" text="Copy" />
-                        <MenuItem fx:id="editPaste" mnemonicParsing="false" text="Paste" />
-                        <MenuItem fx:id="editDelete" mnemonicParsing="false" text="Delete" />
-                    </items>
-                </Menu>
                 <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
                     <items>
                         <MenuItem fx:id="helpUserGuide" mnemonicParsing="false" text="User Guide" />
-                        <MenuItem fx:id="helpAbout" mnemonicParsing="false" text="About" />
                     </items>
                 </Menu>
             </menus>

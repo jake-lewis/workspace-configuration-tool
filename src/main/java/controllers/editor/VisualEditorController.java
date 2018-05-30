@@ -9,10 +9,7 @@ import javafx.scene.layout.GridPane;
 import model.ExceptionAlert;
 import model.HierarchyTreeCell;
 import model.commands.concrete.*;
-import model.configuration.Configuration;
-import model.configuration.Directory;
-import model.configuration.InvalidConfigurationException;
-import model.configuration.XMLConfiguration;
+import model.configuration.*;
 import model.executors.UndoableExecutor;
 
 import java.io.File;
@@ -219,11 +216,29 @@ public class VisualEditorController implements EditorController {
         //TODO add support for other types of configuration
         XMLConfiguration newConfig = XMLConfiguration.copy((XMLConfiguration) configuration);
         newConfig.setProjectName(projectNameField.getText());
-        if (rootField.getText().equalsIgnoreCase(targetField.getText())) {
+
+        String rootPath = rootField.getText();
+        String targetPath = targetField.getText();
+
+        if (rootPath == null) {
+            rootPath = "";
+        }
+        if (targetPath == null) {
+            targetPath = "";
+        }
+        if (rootPath.equalsIgnoreCase(targetPath)) {
             throw new InvalidConfigurationException("The 'Root Path' and 'Target Path' values must refer to different folders");
         }
-        newConfig.setProjectRootPath(rootField.getText());
-        newConfig.setProjectTargetPath(targetField.getText());
+        newConfig.setProjectRootPath(rootPath);
+        newConfig.setProjectTargetPath(targetPath);
+
+        if (configuration.getProjectTargetPath().isEmpty()) {
+            File target = new File(targetPath);
+            if (target.isDirectory()) {
+                newConfig.setDirectories(ConfigurationFactory.directoriesFromFolder(target));
+            }
+        }
+
         newConfig.updateTextContent();
         apply(newConfig);
     }
